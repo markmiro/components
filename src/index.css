@@ -1,5 +1,48 @@
+html, body, #root {
+	height: 100%;
+}
 body {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
+	font-size: 16px;
+	line-height: 1.2;
+	color: #333;
+}
+input, select, button {
+	color: #333;
+}
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: system-ui, Roboto, Helvetica, sans-serif;
+	transition-property: opacity, border-color, box-shadow, background-color;
+	transition-timing-function: ease-in-out;
+	transition-duration: 80ms;
+}
+/* For non-form elements */
+*:focus{
+	outline: none;
+	border-color: hsla(217, 100%, 43%, 0.5) !important;
+	box-shadow: inset 0px 2px 2px 0px hsla(217, 100%, 59%, 0.14), 0px 0px 0px 2px hsla(227, 100%, 59%, 0.25);
+}
+h1 {
+	padding-bottom: 0.25rem;
+	border-bottom: 1px solid #d4d4d4;
+}
+hr {
+	border: 1px solid #d4d4d4;
+	border-top: 0;
+}
+a {
+	color: hsl(217, 98%, 57%);
+}
+@keyframes fade-out {
+  0%   { opacity: 0.45; }
+  75%  { opacity: 0.65; }
+  100% { opacity: 0.65; }
+}
+
+@keyframes fade-out2 {
+  0%   { opacity: 1.0; }
+  50%  { opacity: 0.2; }
+  100%  { opacity: 1; }
 }
