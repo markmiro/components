@@ -5,6 +5,7 @@ const validators = {
 };
 
 const validations = {
+  required: value => (validators.empty(value) ? "Required" : ""),
   name: value =>
     (validators.empty(value) && "Required") ||
     (value.length < 2 && "At least 2 characters required") ||

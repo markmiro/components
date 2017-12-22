@@ -2,10 +2,11 @@ import React from "react";
 import { ValidatedForm } from "./Validated";
 import "bootstrap/dist/css/bootstrap.css";
 
-const validations = {
-  username: value => (value.indexOf(" ") > -1 ? "No spaces allowed" : ""),
-  email: value => (/\S+@\S+\.\S+/.test(value) ? "" : "Invalid email")
-};
+const isRequired = value => (value === "" ? "Required" : "");
+const isValidUsername = value =>
+  value.indexOf(" ") > -1 ? "No spaces allowed" : "";
+const isValidEmail = value =>
+  /\S+@\S+\.\S+/.test(value) ? "" : "Invalid email";
 
 class SimpleForm extends React.Component {
   state = {
@@ -14,7 +15,10 @@ class SimpleForm extends React.Component {
   };
   render = () => (
     <ValidatedForm
-      validations={validations}
+      validations={{
+        username: [isRequired, isValidUsername],
+        email: [isRequired, isValidEmail]
+      }}
       onSubmit={isValid => alert(isValid ? "Success" : "Error")}
       state={this.state}
       render={({ username, email, allComplete }) => (
@@ -46,7 +50,7 @@ class SimpleForm extends React.Component {
             </small>
           </div>
           <button
-            disabled={!allComplete()}
+            // disabled={!allComplete()}
             type="submit"
             className="btn btn-dark btn-block"
           >
