@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
-import Resume from './Resume';
+import React, { Component } from "react";
+import Resume from "./Resume";
 
 class App extends Component {
   render() {
-    return (
-        <Resume />
-    );
+    return <Resume />;
   }
 }
 
