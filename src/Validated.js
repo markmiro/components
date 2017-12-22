@@ -42,17 +42,14 @@ import {
 // return new function that takes an argument and passes it down to all functions
 const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
-const areAllValid = validationMessages =>
-  every(validationMessages, message => message === "");
-
 export default class Validated extends Component {
   constructor(props) {
     super(props);
-    const empty = mapValues(this.getValidations(), () => "");
+    const empty = this._mapKeys(() => "");
     this.state = {
       ...empty,
       ...this.props.initialValues,
-      validationMessages: mapValues(this.getValidations(), () => null)
+      validationMessages: this._mapKeys(() => null)
     };
   }
   componentDidMount() {
@@ -64,27 +61,30 @@ export default class Validated extends Component {
       this.setState({ validationMessages });
     }
   }
-  getKeyValue = key =>
-    this.props.state ? this.props.state[key] : this.state[key];
-  getValidations = state =>
+  _getValidations = state =>
     isFunction(this.props.validations)
       ? this.props.validations(state)
       : this.props.validations;
+  _mapKeys = cb => mapValues(this._getValidations(), (_, key) => cb(key));
+  _getKeyValues = () => (this.props.state ? this.props.state : this.state);
+  _getKeyValue = key => this._getKeyValues()[key];
+  _getValidationMessage = (key, currState) =>
+    this._getValidations(this._getKeyValues)[key](this._getKeyValue(key));
   validateAll = done => {
     this.setState(
       currState => ({
-        validationMessages: mapValues(this.getValidations(), (_, key) => {
-          // Consider replacing this.getValidations(currState) with this.getKeyValues()
+        validationMessages: this._mapKeys(key => {
+          // Consider replacing this._getValidations(currState) with this._getKeyValues()
           // TODO: tell user that validations object/function is missing key: [key]
-          if (!this.getValidations(currState)[key]) {
+          if (!this._getValidations()[key]) {
             throw new ReferenceError(
               `You're missing key: "${key}" in your validations prop in <Validated />`
             );
           }
-          return this.getValidations(currState)[key](this.getKeyValue(key));
+          return this._getValidationMessage(key, currState);
         })
       }),
-      () => done && done(areAllValid(this.state.validationMessages))
+      () => done && done(this.allValid(this.state.validationMessages))
     );
   };
   clear = key => {
@@ -99,16 +99,14 @@ export default class Validated extends Component {
     this.setState(currState => ({
       validationMessages: {
         ...currState.validationMessages,
-        [key]: this.getValidations(currState)[key](this.getKeyValue(key))
+        [key]: this._getValidationMessage(key, currState)
       }
     }));
   };
   allComplete = () =>
-    !includes(
-      mapValues(this.getValidations(), (_, key) => this.getKeyValue(key)),
-      ""
-    );
-  allValid = () => areAllValid(this.state.validationMessages);
+    !includes(this._mapKeys(key => this._getKeyValue(key)), "");
+  allValid = () =>
+    every(this.state.validationMessages, message => message === "");
   validateIfValidatedInternal = key => {
     if (this.state.validationMessages[key] !== null) {
       this.validate(key);
@@ -125,7 +123,7 @@ export default class Validated extends Component {
     }
   };
   validateIfNonEmpty = key => () => {
-    if (this.getKeyValue(key)) {
+    if (this._getKeyValue(key)) {
       this.validate(key);
     } else {
       this.clear(key);
@@ -135,15 +133,15 @@ export default class Validated extends Component {
     this.setState({ validationMessages });
   getProps = key => ({ onChange, onBlur, ...rest } = {}) => ({
     name: key,
-    value: this.getKeyValue(key), // You can extract state, but you can't set it
+    value: this._getKeyValue(key), // You can extract state, but you can't set it
     onChange: compose(this.validateIfValidated(key), onChange),
     onBlur: compose(this.validateIfNonEmpty(key), onBlur),
     ...rest
   });
   render() {
-    const inputProps = mapValues(this.getValidations(), (_, key) => ({
+    const inputProps = this._mapKeys(key => ({
       name: key,
-      value: this.getKeyValue(key),
+      value: this._getKeyValue(key),
       validate: () => this.validate(key),
       validateIfValidated: this.validateIfValidated(key),
       validateIfNonEmpty: this.validateIfNonEmpty(key),
