@@ -36,6 +36,7 @@ import SimpleForm3 from "../SimpleForm3";
 import SimpleForm4 from "../SimpleForm4";
 import SimpleForm5 from "../SimpleForm5";
 import SimpleForm5b from "../SimpleForm5b";
+import SimpleForm5c from "../SimpleForm5c";
 import TransitionExample from "../TransitionExample";
 import TransitionContentExample from "../TransitionContentExample";
 import "../globals";
@@ -194,7 +195,8 @@ storiesOf("Forms", module)
   .add("SimpleForm3", () => <SimpleForm3 />)
   .add("SimpleForm4", () => <SimpleForm4 />)
   .add("SimpleForm5", () => <SimpleForm5 />)
-  .add("SimpleForm5b", () => <SimpleForm5b />);
+  .add("SimpleForm5b", () => <SimpleForm5b />)
+  .add("SimpleForm5c", () => <SimpleForm5c />);
 
 storiesOf("Responsive Select", module)
   .addDecorator(Padded)

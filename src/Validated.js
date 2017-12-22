@@ -6,7 +6,9 @@ import {
   includes,
   every,
   isFunction,
-  castArray
+  isEmpty,
+  castArray,
+  first
 } from "lodash";
 
 // DONE:
@@ -19,6 +21,7 @@ import {
 // - Custom validation triggers
 // - Use without needing to wrap your field components
 // - Multiple validations
+// - Multiple error messages
 
 // TODO:
 // - Async validation
@@ -31,7 +34,6 @@ import {
 // - Allow using a mix of internal and external state
 
 // TO TEST:
-// - Try it on password creation field
 // - Use `Validated` for every field except one
 // - Use `Validated` except trigger validation on custom logic
 // - Dynamically adding fields
@@ -39,7 +41,7 @@ import {
 // - See if it's worth using this component for showing hints and not errors
 
 const EMPTY_VALUE = "";
-const NO_ERROR = "";
+const NO_ERROR = [];
 const NO_VALIDATION = null;
 
 // return new function that takes an argument and passes it down to all functions
@@ -63,14 +65,11 @@ export default class Validated extends Component {
     isFunction(this.props.validations)
       ? this.props.validations(state)
       : this.props.validations;
-  _getValidationMessage = key => {
+  _getValidationMessages = key => {
     const validators = castArray(this._getValidations(this._getFields())[key]);
     const toValidate = this._getFields()[key];
-    return (
-      validators
-        .map(validator => validator(toValidate))
-        .find(result => result !== NO_ERROR) || NO_ERROR
-    );
+    const nonEmpty = message => !isEmpty(message);
+    return validators.map(validator => validator(toValidate)).filter(nonEmpty);
   };
   _mapKeys = cb => mapValues(this._getValidations(), (_, key) => cb(key));
   validateAll = done => {
@@ -83,7 +82,7 @@ export default class Validated extends Component {
               `You're missing key: "${key}" in your validations prop in <Validated />`
             );
           }
-          return this._getValidationMessage(key);
+          return this._getValidationMessages(key);
         })
       },
       () => done && done(this.allValid(this.state.validationMessages))
@@ -92,7 +91,7 @@ export default class Validated extends Component {
   allComplete = () =>
     !includes(this._mapKeys(key => this._getFields()[key]), EMPTY_VALUE);
   allValid = () =>
-    every(this.state.validationMessages, message => message === NO_ERROR);
+    every(this.state.validationMessages, message => isEqual(message, NO_ERROR));
   setValidationMessages = validationMessages =>
     this.setState({ validationMessages });
   keyFields = key => {
@@ -111,7 +110,7 @@ export default class Validated extends Component {
           this.setState({
             validationMessages: {
               ...this.state.validationMessages,
-              [key]: this._getValidationMessage(key)
+              [key]: this._getValidationMessages(key)
             }
           }),
         0
@@ -151,18 +150,18 @@ export default class Validated extends Component {
       validate,
       validateIfValidated,
       validateIfNonEmpty,
-      validationMessage: this.state.validationMessages[key] || NO_ERROR,
+      validationMessage: castArray(this.state.validationMessages[key])[0] || "",
+      validationMessages: this.state.validationMessages[key] || NO_ERROR,
       getProps,
       watch: element => <element.type {...getProps(element.props)} />
     };
   };
   render() {
-    const inputProps = this._mapKeys(key => ({
-      name: key,
-      ...this.keyFields(key)
-    }));
     const inputPropsExtended = {
-      ...inputProps,
+      ...this._mapKeys(key => ({
+        name: key,
+        ...this.keyFields(key)
+      })),
       // MAYBE: consider putting these in the second render prop arg as helper functions
       // MAYBE: consider making `validationMessages` state live outside this component
       setValidationMessages: this.setValidationMessages,
