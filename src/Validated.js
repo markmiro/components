@@ -22,7 +22,6 @@ import {
 
 // TODO:
 // - Async validation
-// - Optional fields (vs required)
 // - FIX: Make `allValid` if user types into last field and gets it right (before blur)
 
 // MAYBE:
