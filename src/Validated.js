@@ -59,14 +59,13 @@ export default class Validated extends Component {
     this.props.initialValues && this.validateAll();
   }
   _getFields = () => (this.props.state ? this.props.state : this.state);
-  _getFieldValue = key => this._getFields()[key];
   _getValidations = state =>
     isFunction(this.props.validations)
       ? this.props.validations(state)
       : this.props.validations;
   _getValidationMessage = key => {
     const validators = castArray(this._getValidations(this._getFields())[key]);
-    const toValidate = this._getFieldValue(key);
+    const toValidate = this._getFields()[key];
     return (
       validators
         .map(validator => validator(toValidate))
@@ -90,71 +89,77 @@ export default class Validated extends Component {
       () => done && done(this.allValid(this.state.validationMessages))
     );
   };
-  clear = key => {
-    this.setState(currState => ({
-      validationMessages: {
-        ...currState.validationMessages,
-        [key]: NO_VALIDATION
-      }
-    }));
-  };
-  validate = key => {
-    window.setTimeout(
-      () =>
-        this.setState({
-          validationMessages: {
-            ...this.state.validationMessages,
-            [key]: this._getValidationMessage(key)
-          }
-        }),
-      0
-    );
-  };
   allComplete = () =>
-    !includes(this._mapKeys(key => this._getFieldValue(key)), EMPTY_VALUE);
+    !includes(this._mapKeys(key => this._getFields()[key]), EMPTY_VALUE);
   allValid = () =>
     every(this.state.validationMessages, message => message === NO_ERROR);
-  validateIfValidated = key => e => {
-    const validateIfValidatedInternal = key => {
-      if (this.state.validationMessages[key] !== NO_VALIDATION) {
-        this.validate(key);
-      }
-    };
-    // Assume: `key in this.props.state`
-    if (this.props.state) {
-      window.setTimeout(() => validateIfValidatedInternal(key), 0);
-    } else {
-      this.setState({ [key]: e.target.value }, () =>
-        validateIfValidatedInternal(key)
-      );
-    }
-  };
-  validateIfNonEmpty = key => () => {
-    if (this._getFieldValue(key)) {
-      this.validate(key);
-    } else {
-      this.clear(key);
-    }
-  };
   setValidationMessages = validationMessages =>
     this.setState({ validationMessages });
-  getProps = key => ({ onChange, onBlur, ...rest } = {}) => ({
-    name: key,
-    value: this._getFieldValue(key), // You can extract state, but you can't set it
-    onChange: compose(this.validateIfValidated(key), onChange),
-    onBlur: compose(this.validateIfNonEmpty(key), onBlur),
-    ...rest
-  });
+  keyFields = key => {
+    const value = this._getFields()[key];
+    const clear = () => {
+      this.setState(currState => ({
+        validationMessages: {
+          ...currState.validationMessages,
+          [key]: NO_VALIDATION
+        }
+      }));
+    };
+    const validate = () => {
+      window.setTimeout(
+        () =>
+          this.setState({
+            validationMessages: {
+              ...this.state.validationMessages,
+              [key]: this._getValidationMessage(key)
+            }
+          }),
+        0
+      );
+    };
+    const validateIfValidated = e => {
+      const validateIfValidatedInternal = key => {
+        if (this.state.validationMessages[key] !== NO_VALIDATION) {
+          validate();
+        }
+      };
+      // Assume: `key in this.props.state`
+      if (this.props.state) {
+        window.setTimeout(() => validateIfValidatedInternal(key), 0);
+      } else {
+        this.setState({ [key]: e.target.value }, () =>
+          validateIfValidatedInternal(key)
+        );
+      }
+    };
+    const validateIfNonEmpty = () => {
+      if (value) {
+        validate();
+      } else {
+        clear();
+      }
+    };
+    const getProps = ({ onChange, onBlur, ...rest } = {}) => ({
+      name: key,
+      value, // You can extract state, but you can't set it
+      onChange: compose(validateIfValidated, onChange),
+      onBlur: compose(validateIfNonEmpty, onBlur),
+      ...rest
+    });
+    return {
+      value,
+      validate,
+      validateIfValidated,
+      validateIfNonEmpty,
+      validationMessage: this.state.validationMessages[key] || NO_ERROR,
+      getProps,
+      watch: element => <element.type {...getProps(element.props)} />
+    };
+  };
   render() {
     const inputProps = this._mapKeys(key => ({
       name: key,
-      value: this._getFieldValue(key),
-      validate: () => this.validate(key),
-      validateIfValidated: this.validateIfValidated(key),
-      validateIfNonEmpty: this.validateIfNonEmpty(key),
-      validationMessage: this.state.validationMessages[key] || NO_ERROR,
-      getProps: this.getProps(key),
-      watch: element => <element.type {...this.getProps(key)(element.props)} />
+      ...this.keyFields(key)
     }));
     const inputPropsExtended = {
       ...inputProps,
