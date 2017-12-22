@@ -61,7 +61,7 @@ class SimpleForm extends React.Component {
               .catch(validationMessages =>
                 setValidationMessages(validationMessages)
               )
-              .then(() => this.setState({ isSubmitting: vfalse }));
+              .then(() => this.setState({ isSubmitting: false }));
           }}
         >
           <VerticalSpacer space=".5em">
