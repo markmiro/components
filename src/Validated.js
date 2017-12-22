@@ -19,15 +19,14 @@ import {
 // Use without needing to wrap your field components
 
 // TODO:
-// - Maybe validate right away but don't show error unless it's been successful at some point?
 // - Async validation
 // - Multiple validations
 // - Optional fields (vs required)
-// - FIX: Make `allValid` true if `initialValues` is set and they all validate
 // - FIX: Make `allValid` if user types into last field and gets it right (before blur)
 
 // MAYBE:
-// - Maybe allow for it to work with any validators, not just ones that return strings
+// - Validate right away but don't show error unless it's been successful at some point?
+// - Allow for it to work with any validators, not just ones that return strings
 // - Add validate() trigger directly
 // - Allow using a mix of internal and external state
 
@@ -68,22 +67,21 @@ export default class Validated extends Component {
   _mapKeys = cb => mapValues(this._getValidations(), (_, key) => cb(key));
   _getKeyValues = () => (this.props.state ? this.props.state : this.state);
   _getKeyValue = key => this._getKeyValues()[key];
-  _getValidationMessage = (key, currState) =>
-    this._getValidations(this._getKeyValues)[key](this._getKeyValue(key));
+  _getValidationMessage = key =>
+    this._getValidations(this._getKeyValues())[key](this._getKeyValue(key));
   validateAll = done => {
     this.setState(
-      currState => ({
+      {
         validationMessages: this._mapKeys(key => {
-          // Consider replacing this._getValidations(currState) with this._getKeyValues()
           // TODO: tell user that validations object/function is missing key: [key]
           if (!this._getValidations()[key]) {
             throw new ReferenceError(
               `You're missing key: "${key}" in your validations prop in <Validated />`
             );
           }
-          return this._getValidationMessage(key, currState);
+          return this._getValidationMessage(key);
         })
-      }),
+      },
       () => done && done(this.allValid(this.state.validationMessages))
     );
   };
@@ -99,7 +97,7 @@ export default class Validated extends Component {
     this.setState(currState => ({
       validationMessages: {
         ...currState.validationMessages,
-        [key]: this._getValidationMessage(key, currState)
+        [key]: this._getValidationMessage(key)
       }
     }));
   };
