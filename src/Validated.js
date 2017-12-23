@@ -25,20 +25,23 @@ import {
 
 // TODO:
 // - Async validation
-// - FIX: Make `allValid` if user types into last field and gets it right (before blur)
 
 // MAYBE:
 // - Validate right away but don't show error unless it's been successful at some point?
 // - Allow for it to work with any validators, not just ones that return strings
 // - Add validate() trigger directly
 // - Allow using a mix of internal and external state
+// - Add masks
+// - Have feature parity with `redux-form` and `Angular 5` forms
+//   - States: pristine, untouched, touched, invalid, valid
+// - Make `allValid` if user types into last field and gets it right (before blur)
 
 // TO TEST:
-// - Use `Validated` for every field except one
-// - Use `Validated` except trigger validation on custom logic
+// - Input normalization
 // - Dynamically adding fields
 // - Delayed validation
 // - See if it's worth using this component for showing hints and not errors
+// - Multiple-screen form
 
 const EMPTY_VALUE = "";
 const NO_ERROR = [];
@@ -65,9 +68,8 @@ export default class Validated extends Component {
     isFunction(this.props.validations)
       ? this.props.validations(state)
       : this.props.validations;
-  _getValidationMessages = key => {
+  _getValidationMessages = (key, toValidate = this._getFields()[key]) => {
     const validators = castArray(this._getValidations(this._getFields())[key]);
-    const toValidate = this._getFields()[key];
     const nonEmpty = message => !isEmpty(message);
     return validators.map(validator => validator(toValidate)).filter(nonEmpty);
   };
@@ -147,6 +149,7 @@ export default class Validated extends Component {
     });
     return {
       value,
+      getValidationMessages: value => this._getValidationMessages(key, value),
       validate,
       validateIfValidated,
       validateIfNonEmpty,
