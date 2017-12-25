@@ -149,7 +149,7 @@ export default class Validated extends Component {
     });
     return {
       value,
-      getValidationMessages: value => this._getValidationMessages(key, value),
+      isValid: value => this._getValidationMessages(key, value),
       validate,
       validateIfValidated,
       validateIfNonEmpty,
@@ -182,7 +182,7 @@ export default class Validated extends Component {
 //   [key].validate
 //   [key].validateIfInvalid
 //   [key].validateIfNotEmpty
-//   [key].errorMessage
+//   [key].errorMessages
 //   setValidationMessages()
 //   validateAll()
 //   areAllValid()
