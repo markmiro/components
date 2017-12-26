@@ -25,6 +25,7 @@ import {
 
 // TODO:
 // - Async validation
+// - Work nicely with form auto-fillers
 
 // MAYBE:
 // - Validate right away but don't show error unless it's been successful at some point?
@@ -53,11 +54,11 @@ const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 export default class Validated extends Component {
   constructor(props) {
     super(props);
-    const empty = this._mapKeys(() => EMPTY_VALUE);
+    const empty = this._mapValidations(() => EMPTY_VALUE);
     this.state = {
       ...empty,
       ...this.props.initialValues,
-      validationMessages: this._mapKeys(() => NO_VALIDATION)
+      validationMessages: this._mapValidations(() => NO_VALIDATION)
     };
   }
   componentDidMount() {
@@ -73,11 +74,12 @@ export default class Validated extends Component {
     const nonEmpty = message => !isEmpty(message);
     return validators.map(validator => validator(toValidate)).filter(nonEmpty);
   };
-  _mapKeys = cb => mapValues(this._getValidations(), (_, key) => cb(key));
+  _mapValidations = cb =>
+    mapValues(this._getValidations(), (_, key) => cb(key));
   validateAll = done => {
     this.setState(
       {
-        validationMessages: this._mapKeys(key => {
+        validationMessages: this._mapValidations(key => {
           // TODO: tell user that validations object/function is missing key: [key]
           if (!this._getValidations()[key]) {
             throw new ReferenceError(
@@ -91,7 +93,7 @@ export default class Validated extends Component {
     );
   };
   allComplete = () =>
-    !includes(this._mapKeys(key => this._getFields()[key]), EMPTY_VALUE);
+    !includes(this._mapValidations(key => this._getFields()[key]), EMPTY_VALUE);
   allValid = () =>
     every(this.state.validationMessages, message => isEqual(message, NO_ERROR));
   setValidationMessages = validationMessages =>
@@ -149,7 +151,7 @@ export default class Validated extends Component {
     });
     return {
       value,
-      isValid: value => this._getValidationMessages(key, value),
+      getValidationMessages: value => this._getValidationMessages(key, value),
       validate,
       validateIfValidated,
       validateIfNonEmpty,
@@ -161,7 +163,7 @@ export default class Validated extends Component {
   };
   render() {
     const inputPropsExtended = {
-      ...this._mapKeys(key => ({
+      ...this._mapValidations(key => ({
         name: key,
         ...this.keyFields(key)
       })),
