@@ -1,4 +1,5 @@
 import validations from "./validations2";
+import validator from "validator";
 import { pick } from "lodash";
 import {
   normalizeValidations,
@@ -53,11 +54,15 @@ describe("validateAll()", () => {
 });
 
 describe("validateAllWithPromises()", () => {
+  /*
+  The function should work without promises because then the same
+  function can take a mixture of promises and non-promises
+  */
   test("without promises", () => {
     const messagesPromise = validateAllWithPromises(
       {
-        username: [validations.required],
-        email: [validations.required]
+        username: validations.required,
+        email: validations.required
       },
       {
         username: "bla",
@@ -69,10 +74,11 @@ describe("validateAllWithPromises()", () => {
       expect(email).toEqual([""]);
     });
   });
+
   test("with promises", () => {
     const formValidations = {
-      username: [value => Promise.resolve(validations.required(value))],
-      email: [value => Promise.resolve(validations.required(value))]
+      username: value => Promise.resolve(validations.required(value)),
+      email: value => Promise.resolve(validations.required(value))
     };
     const formFields = {
       username: "bla",
@@ -86,10 +92,17 @@ describe("validateAllWithPromises()", () => {
       expect(result).toEqual({ username: [""], email: [""] });
     });
   });
+
+  /*
+  It may make sense to reject rather then resolving. However,
+  validations logic is arguable error logic. Therefore, resolved means
+  that the validation code executed successfully. It doesn't mean that the
+  user input is valid.
+  */
   test("with promises that resolve error messages", () => {
     const formValidations = {
-      username: [value => Promise.resolve(validations.required(value))],
-      email: [value => Promise.resolve(validations.required(value))]
+      username: value => Promise.resolve(validations.required(value)),
+      email: value => Promise.resolve(validations.required(value))
     };
     const formFields = {
       username: "",
@@ -103,10 +116,43 @@ describe("validateAllWithPromises()", () => {
       expect(result).toEqual({ username: ["Required"], email: ["Required"] });
     });
   });
-  test("with promises that reject", () => {
+
+  /*
+  Ideally, the user wouldn't be using validators that reject on invalid input
+  since programmer errors also reject, and there's no go way to distinguish
+  the two. Rejecting without an Error object seems promising though.
+  */
+  test("work ok with promises that reject for invalid input", () => {
+    const emailValidator = value =>
+      validator.isEmail(value)
+        ? Promise.resolve()
+        : Promise.reject("Email is invalid");
     const formValidations = {
-      username: [value => Promise.reject(validations.required(value))],
-      email: [value => Promise.reject(validations.required(value))]
+      email1: emailValidator,
+      email2: emailValidator
+    };
+    const formFields = {
+      email1: "bla@",
+      email2: "bla@bla.com"
+    };
+    const messagesPromise = validateAllWithPromises(
+      formValidations,
+      formFields
+    );
+    return messagesPromise.catch(result => {
+      /*
+      Of course we wanna make sure that validation still kinda works.
+      There's no way to determine which field this message belongs to
+      unless it's in the error message itself.
+      */
+      expect(result).toEqual("Email is invalid");
+    });
+  });
+
+  test("propogate error objects when promises reject", () => {
+    const formValidations = {
+      username: value => Promise.reject(new Error("Something")),
+      email: value => Promise.reject(validations.required(value))
     };
     const formFields = {
       username: "",
@@ -118,11 +164,28 @@ describe("validateAllWithPromises()", () => {
     );
     return messagesPromise
       .then(result => {
-        expect(result).toEqual({ username: ["Required"], email: ["Required"] });
+        expect(true).toBe(false);
       })
-      .catch(errors => {
-        expect(errors).toEqual("");
+      .catch(error => {
+        // Only expecting to see the first error
+        expect(error instanceof Error).toBe(true);
+        expect(error.message).toEqual("Something");
       });
+  });
+  test("propogate exceptions in promises", () => {
+    const formValidations = {
+      username: value => {
+        return new Promise(() => {
+          value.bla.bla;
+        });
+      }
+    };
+    const formFields = {
+      username: ""
+    };
+    return validateAllWithPromises(formValidations, formFields).catch(error => {
+      expect(error instanceof TypeError).toBe(true);
+    });
   });
 });
 
