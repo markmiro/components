@@ -187,6 +187,27 @@ describe("validateAllWithPromises()", () => {
       expect(error instanceof TypeError).toBe(true);
     });
   });
+  test("handle missing validations", () => {
+    const formValidations = {};
+    const formFields = {
+      username: ""
+    };
+    return validateAllWithPromises(
+      formValidations,
+      formFields
+    ).then(({ username }) => expect(username).toBe(undefined));
+  });
+  test("handle missing form fields by throwing errror", () => {
+    const formValidations = {
+      username: value => Promise.resolve(validations.required(value))
+    };
+    const formFields = {};
+    try {
+      validateAllWithPromises(formValidations, formFields);
+    } catch (error) {
+      expect(error instanceof Error).toBe(true);
+    }
+  });
 });
 
 test("validate()", () => {

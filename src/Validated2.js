@@ -19,7 +19,10 @@ export const validateAll = (validations, formFields) =>
   mapValues(
     normalizeValidations(validations)(formFields),
     (validation, fieldKey) =>
-      castArray(validation).map(validation => validation(formFields[fieldKey]))
+      castArray(validation).map(validation => {
+        if (fieldKey in formFields) return validation(formFields[fieldKey]);
+        throw new Error(`"${fieldKey}" missing in "formFields"`);
+      })
   );
 
 export const validateAllWithPromises = (validations, formFields) => {
