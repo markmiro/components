@@ -1,6 +1,6 @@
 import validations from "./validations2";
 import validator from "validator";
-import { pick } from "lodash";
+import { without } from "lodash";
 import {
   normalizeValidations,
   validate,
@@ -8,12 +8,35 @@ import {
   validateAllWithPromises,
   validateWithPromises
 } from "./Validated2";
+import { trace } from "./globals";
 
 // TODO: add tests to make sure exceptions are handled properly
 
 test("normalizeValidations()", () => {
   const normalized = normalizeValidations(validations);
   expect(normalized()).toBe(validations);
+});
+
+describe("validate()", () => {
+  test("with invalid value", () => {
+    const errorMessages = validate(validations.required, "");
+    expect(errorMessages).toEqual("Required");
+  });
+  test("with valid value", () => {
+    const errorMessages = validate(validations.required, "Bla");
+    expect(errorMessages).toEqual("");
+  });
+  test("with multiple error messages", () => {
+    const isValidPassword = value => [
+      /[0-9]/.test(value) ? "" : "Please include a number",
+      /[A-Z]/.test(value) ? "" : "Please include a captital letter"
+    ];
+    const errorMessages = validate(isValidPassword, "bla");
+    expect(errorMessages).toEqual([
+      "Please include a number",
+      "Please include a captital letter"
+    ]);
+  });
 });
 
 describe("validateAll()", () => {
@@ -35,7 +58,7 @@ describe("validateAll()", () => {
       name: ""
     });
   });
-  test("with multiple ", () => {
+  test("with multiple", () => {
     const fields = {
       email: "bla@bla.com",
       name: ""
@@ -212,6 +235,28 @@ describe("validateAllWithPromises()", () => {
 });
 
 describe("validateWithPromises()", () => {
+  test("with multiple error messages", () => {
+    const isValidPassword = value => [
+      /[0-9]/.test(value) ? "" : "Please include a number",
+      /[A-Z]/.test(value) ? "" : "Please include a captital letter"
+    ];
+    validateWithPromises(isValidPassword, "bla").then(message =>
+      expect(message).toEqual([
+        "Please include a number",
+        "Please include a captital letter"
+      ])
+    );
+  });
+  test("with multiple error messages success", () => {
+    const isValidPassword = value =>
+      [
+        /[0-9]/.test(value) ? "" : "Please include a number",
+        /[A-Z]/.test(value) ? "" : "Please include a captital letter"
+      ].filter(message => message !== "");
+    validateWithPromises(isValidPassword, "blaA1").then(message =>
+      expect(message).toEqual([])
+    );
+  });
   test("non-promise with valid input", () => {
     return validateWithPromises(validations.required, "bla").then(message => {
       expect(message).toEqual("");
