@@ -5,7 +5,10 @@ import {
   flatten,
   toPairs,
   fromPairs,
-  isEmpty
+  isEmpty,
+  isObject,
+  filter,
+  isNil
 } from "lodash";
 import pLocate from "p-locate";
 import { trace } from "./globals";
@@ -15,12 +18,13 @@ TODO: consider allowing consumer to optionally define this.
 The rationale is that a validtion may return a non-string. However, we
 depend on comparisons to
 */
-const EMPTY_ERROR_MESSAGE = "";
 
-const isNotEmpty = message => !isEmpty(message);
+const isNotEmpty = message =>
+  isObject(message) ? !isEmpty(filter(message, isNotEmpty)) : !!message;
 
-const normalizeEmptyMessage = message =>
-  isEmpty(message) ? EMPTY_ERROR_MESSAGE : message;
+const PREFERRED_NIL = "";
+
+const normalizeNil = value => (isNil(value) ? PREFERRED_NIL : value);
 
 export const normalizeValidations = validations =>
   isFunction(validations) ? validations : () => validations;
@@ -41,7 +45,7 @@ export const validate = (maybeValidationArray, toValidate) => {
   const messages = castArray(maybeValidationArray)
     .map(validation => validation(toValidate))
     .filter(isNotEmpty);
-  return normalizeEmptyMessage(messages);
+  return normalizeNil(messages[0]);
 };
 
 export const validateAll = (validations, fields) => {
@@ -58,12 +62,9 @@ export const validateWithPromises = (maybeValidationArray, toValidate) => {
   ).map(validation => validation(toValidate));
 
   /*
-  Return the first non-empty `resolve` from `promises`
-  or an empty string if they all resolve to an empty string.
+  Return the first non-empty `resolve` from `promises` or an empty value
   */
-  return pLocate(maybePendingValidations, isNotEmpty).then(
-    normalizeEmptyMessage
-  );
+  return pLocate(maybePendingValidations, isNotEmpty).then(normalizeNil);
 };
 
 export const validateAllWithPromises = (validations, fields) => {
@@ -90,13 +91,9 @@ export const validateAllWithPromises = (validations, fields) => {
   const supposedlyValidatedPairs = toPairs(supposedlyValidated);
   return Promise.all(
     flatten(supposedlyValidatedPairs.map(([k, v]) => v))
-  ).then(flattenedResults => {
-    let i = 0;
-    return fromPairs(
-      supposedlyValidatedPairs.map(([k, resultArray]) => [
-        k,
-        castArray(resultArray).map(() => flattenedResults[i++])
-      ])
-    );
-  });
+  ).then(flattenedResults =>
+    fromPairs(
+      supposedlyValidatedPairs.map(([k, _], i) => [k, flattenedResults[i]])
+    )
+  );
 };
