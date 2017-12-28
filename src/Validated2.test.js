@@ -5,7 +5,8 @@ import {
   normalizeValidations,
   validate,
   validateAll,
-  validateAllWithPromises
+  validateAllWithPromises,
+  validateWithPromise
 } from "./Validated2";
 
 // TODO: add tests to make sure exceptions are handled properly
@@ -207,6 +208,73 @@ describe("validateAllWithPromises()", () => {
     } catch (error) {
       expect(error instanceof Error).toBe(true);
     }
+  });
+});
+
+describe("validateWithPromise()", () => {
+  test("non-promise with valid input", () => {
+    return validateWithPromise(
+      { username: validations.required },
+      { username: "bla" },
+      "username"
+    ).then(message => {
+      expect(message).toEqual([]);
+    });
+  });
+  test("non-promise with invalid input", () => {
+    return validateWithPromise(
+      { username: validations.required },
+      { username: "" },
+      "username"
+    ).then(message => {
+      expect(message).toEqual(["Required"]);
+    });
+  });
+  test("promise with valid input", () => {
+    return validateWithPromise(
+      { username: value => Promise.resolve(validations.required(value)) },
+      { username: "bla" },
+      "username"
+    ).then(message => {
+      expect(message).toEqual([]);
+    });
+  });
+  test("promise with invalid input", () => {
+    return validateWithPromise(
+      { username: value => Promise.resolve(validations.required(value)) },
+      { username: "" },
+      "username"
+    ).then(message => {
+      expect(message).toEqual(["Required"]);
+    });
+  });
+  test("promise array with valid input", () => {
+    return validateWithPromise(
+      {
+        username: [
+          value => Promise.resolve(validations.required(value)),
+          value => Promise.resolve(validations.name(value))
+        ]
+      },
+      { username: "bla" },
+      "username"
+    ).then(message => {
+      expect(message).toEqual([]);
+    });
+  });
+  test("promise array with invalid input", () => {
+    return validateWithPromise(
+      {
+        username: [
+          value => Promise.resolve(validations.required(value)),
+          value => Promise.resolve(validations.name(value))
+        ]
+      },
+      { username: "b" },
+      "username"
+    ).then(message => {
+      expect(message).toEqual(["At least 2 characters required"]);
+    });
   });
 });
 

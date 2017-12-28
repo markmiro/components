@@ -38,6 +38,7 @@ import {
 // - Make `allValid` if user types into last field and gets it right (before blur)
 
 // TO TEST:
+// - Inputs like a checkbox (or custom inputs)
 // - Input normalization
 // - Dynamically adding fields
 // - Delayed validation

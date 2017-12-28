@@ -54,3 +54,21 @@ export const validateAllWithPromises = (validations, formFields) => {
 
 export const validate = (validations, formFields, key) =>
   validateAll(validations, formFields)[key];
+
+/*
+TODO: add streaming validation so that validation happens right away and then
+when async validations happen then it responds with those too. Need to decide exactly
+how that's gonna work:
+  - Is this function going to "return" multiple times?
+  - Should we race async errors so that we return as soon as we get something?
+  - How would the consumer deal with this?
+*/
+export const validateWithPromise = (validations, formFields, key) => {
+  const validationsForKey = normalizeValidations(validations)(formFields)[key];
+  return Promise.all(
+    castArray(validationsForKey).map(validation => {
+      if (key in formFields) return validation(formFields[key]);
+      throw new Error(`"${key}" missing in "formFields"`);
+    })
+  ).then(response => response.filter(message => message !== ""));
+};
