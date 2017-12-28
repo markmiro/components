@@ -13,8 +13,35 @@ import { trace } from "./globals";
 
 const NO_ERROR = "";
 
+export const validateWith = (maybeValidationArray, toValidate) => {
+  const maybePendingValidations = castArray(
+    maybeValidationArray
+  ).map(validation => validation(toValidate));
+
+  /*
+  Return the first non-empty `resolve` from `promises`
+  or an empty string if they all resolve to an empty string.
+  */
+  return pLocate(maybePendingValidations, result => result !== NO_ERROR).then(
+    result => (!result ? NO_ERROR : result)
+  );
+};
+
 export const normalizeValidations = validations =>
   isFunction(validations) ? validations : () => validations;
+
+export const validateWithPromise = (validations, fields, key) => {
+  const normalizedValidations = normalizeValidations(validations)(fields);
+
+  // Throw right away since it's a programmer error
+  if (!(key in fields)) throw new Error(`"${key}" missing in "fields"`);
+  if (!(key in normalizedValidations))
+    throw new Error(
+      `"${key}" missing in "validations" object or function return`
+    );
+
+  return validateWith(normalizedValidations[key], fields[key]);
+};
 
 // export const mapValidations = (validations, cb) =>
 //   mapValues(normalizeValidations(validations), (_, key) => cb(key));
@@ -58,30 +85,3 @@ export const validateAllWithPromises = (validations, formFields) => {
 
 export const validate = (validations, formFields, key) =>
   validateAll(validations, formFields)[key];
-
-export const validateWith = (maybeValidationArray, toValidate) => {
-  const maybePendingValidations = castArray(
-    maybeValidationArray
-  ).map(validation => validation(toValidate));
-
-  /*
-  Return the first non-empty `resolve` from `promises`
-  or an empty string if they all resolve to an empty string.
-  */
-  return pLocate(maybePendingValidations, result => result !== NO_ERROR).then(
-    result => (!result ? NO_ERROR : result)
-  );
-};
-
-export const validateWithPromise = (validations, fields, key) => {
-  const normalizedValidations = normalizeValidations(validations)(fields);
-
-  // Throw right away since it's a programmer error
-  if (!(key in fields)) throw new Error(`"${key}" missing in "fields"`);
-  if (!(key in normalizedValidations))
-    throw new Error(
-      `"${key}" missing in "validations" object or function return`
-    );
-
-  return validateWith(normalizedValidations[key], fields[key]);
-};
