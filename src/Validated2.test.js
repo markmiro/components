@@ -6,7 +6,8 @@ import {
   validate,
   validateAll,
   validateAllWithPromises,
-  validateWithPromise
+  validateWithPromise,
+  validateWith
 } from "./Validated2";
 
 // TODO: add tests to make sure exceptions are handled properly
@@ -300,18 +301,63 @@ describe("validateWithPromise()", () => {
   });
 });
 
-test("validate()", () => {
-  const fields = {
-    email: "bla@bla.com",
-    name: ""
-  };
-  const messages = validate(
-    {
-      email: validations.email,
-      name: validations.name
-    },
-    fields,
-    "email"
-  );
-  expect(messages).toEqual(["", ""]);
+describe("validateWith()", () => {
+  test("non-promise with valid input", () => {
+    return validateWith(validations.required, "bla").then(message => {
+      expect(message).toEqual("");
+    });
+  });
+  test("non-promise with invalid input", () => {
+    return validateWith(validations.required, "").then(message => {
+      expect(message).toEqual("Required");
+    });
+  });
+  test("promise with valid input", () => {
+    const requiredAsync = value => Promise.resolve(validations.required(value));
+    return validateWith(requiredAsync, "bla").then(message => {
+      expect(message).toEqual("");
+    });
+  });
+  test("promise with invalid input", () => {
+    const requiredAsync = value => Promise.resolve(validations.required(value));
+    return validateWith(requiredAsync, "").then(message => {
+      expect(message).toEqual("Required");
+    });
+  });
+  test("promise array with valid input", () => {
+    return validateWith(
+      [
+        value => Promise.resolve(validations.required(value)),
+        value => Promise.resolve(validations.name(value))
+      ],
+      "bla"
+    ).then(message => {
+      expect(message).toEqual("");
+    });
+  });
+  test("promise array with invalid input", () => {
+    return validateWith(
+      [
+        value => Promise.resolve(validations.required(value)),
+        value => Promise.resolve(validations.name(value))
+      ],
+      "b"
+    ).then(message => {
+      expect(message).toEqual("At least 2 characters required");
+    });
+  });
+  test("handle missing validations", () => {
+    try {
+      validateWith([], formFields, "");
+    } catch (error) {
+      expect(error instanceof Error).toBe(true);
+    }
+  });
+  test("handle wrong validations", () => {
+    try {
+      validateWith("", "");
+    } catch (error) {
+      expect(error instanceof Error).toBe(true);
+    }
+  });
 });

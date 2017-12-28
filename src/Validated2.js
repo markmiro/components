@@ -3,10 +3,8 @@ import {
   mapValues,
   castArray,
   flatten,
-  values,
   toPairs,
-  fromPairs,
-  partition
+  fromPairs
 } from "lodash";
 import pLocate from "p-locate";
 import { trace } from "./globals";
@@ -49,8 +47,8 @@ export const validateWithPromise = (validations, fields, key) => {
 export const validateAll = (validations, formFields) =>
   mapValues(
     normalizeValidations(validations)(formFields),
-    (validation, fieldKey) =>
-      castArray(validation).map(validation => {
+    (maybeValidationArray, fieldKey) =>
+      castArray(maybeValidationArray).map(validation => {
         if (fieldKey in formFields) return validation(formFields[fieldKey]);
         throw new Error(`"${fieldKey}" missing in "formFields"`);
       })
@@ -82,6 +80,3 @@ export const validateAllWithPromises = (validations, formFields) => {
     );
   });
 };
-
-export const validate = (validations, formFields, key) =>
-  validateAll(validations, formFields)[key];
