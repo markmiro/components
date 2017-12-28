@@ -6,8 +6,7 @@ import {
   validate,
   validateAll,
   validateAllWithPromises,
-  validateWithPromise,
-  validateWith
+  validateWithPromises
 } from "./Validated2";
 
 // TODO: add tests to make sure exceptions are handled properly
@@ -24,7 +23,7 @@ describe("validateAll()", () => {
     };
     const errorMessages = validateAll({ name: validations.required }, fields);
     expect(errorMessages).toEqual({
-      name: ["Required"]
+      name: "Required"
     });
   });
   test("with valid field", () => {
@@ -33,7 +32,7 @@ describe("validateAll()", () => {
     };
     const errorMessages = validateAll({ name: validations.required }, fields);
     expect(errorMessages).toEqual({
-      name: [""]
+      name: ""
     });
   });
   test("with multiple ", () => {
@@ -49,8 +48,8 @@ describe("validateAll()", () => {
       fields
     );
     expect(errorMessages).toEqual({
-      email: ["", ""],
-      name: ["At least 2 characters required"]
+      email: "",
+      name: "At least 2 characters required"
     });
   });
 });
@@ -212,120 +211,31 @@ describe("validateAllWithPromises()", () => {
   });
 });
 
-describe("validateWithPromise()", () => {
+describe("validateWithPromises()", () => {
   test("non-promise with valid input", () => {
-    return validateWithPromise(
-      { username: validations.required },
-      { username: "bla" },
-      "username"
-    ).then(message => {
+    return validateWithPromises(validations.required, "bla").then(message => {
       expect(message).toEqual("");
     });
   });
   test("non-promise with invalid input", () => {
-    return validateWithPromise(
-      { username: validations.required },
-      { username: "" },
-      "username"
-    ).then(message => {
-      expect(message).toEqual("Required");
-    });
-  });
-  test("promise with valid input", () => {
-    return validateWithPromise(
-      { username: value => Promise.resolve(validations.required(value)) },
-      { username: "bla" },
-      "username"
-    ).then(message => {
-      expect(message).toEqual("");
-    });
-  });
-  test("promise with invalid input", () => {
-    return validateWithPromise(
-      { username: value => Promise.resolve(validations.required(value)) },
-      { username: "" },
-      "username"
-    ).then(message => {
-      expect(message).toEqual("Required");
-    });
-  });
-  test("promise array with valid input", () => {
-    return validateWithPromise(
-      {
-        username: [
-          value => Promise.resolve(validations.required(value)),
-          value => Promise.resolve(validations.name(value))
-        ]
-      },
-      { username: "bla" },
-      "username"
-    ).then(message => {
-      expect(message).toEqual("");
-    });
-  });
-  test("promise array with invalid input", () => {
-    return validateWithPromise(
-      {
-        username: [
-          value => Promise.resolve(validations.required(value)),
-          value => Promise.resolve(validations.name(value))
-        ]
-      },
-      { username: "b" },
-      "username"
-    ).then(message => {
-      expect(message).toEqual("At least 2 characters required");
-    });
-  });
-  test("handle missing validations", () => {
-    const formValidations = {};
-    const formFields = {
-      username: ""
-    };
-    try {
-      return validateWithPromise(formValidations, formFields, "username");
-    } catch (error) {
-      expect(error instanceof Error).toBe(true);
-    }
-  });
-  test("handle missing form fields by throwing error", () => {
-    const formValidations = {
-      username: value => Promise.resolve(validations.required(value))
-    };
-    const formFields = {};
-    try {
-      return validateWithPromise(formValidations, formFields, "username");
-    } catch (error) {
-      expect(error instanceof Error).toBe(true);
-    }
-  });
-});
-
-describe("validateWith()", () => {
-  test("non-promise with valid input", () => {
-    return validateWith(validations.required, "bla").then(message => {
-      expect(message).toEqual("");
-    });
-  });
-  test("non-promise with invalid input", () => {
-    return validateWith(validations.required, "").then(message => {
+    return validateWithPromises(validations.required, "").then(message => {
       expect(message).toEqual("Required");
     });
   });
   test("promise with valid input", () => {
     const requiredAsync = value => Promise.resolve(validations.required(value));
-    return validateWith(requiredAsync, "bla").then(message => {
+    return validateWithPromises(requiredAsync, "bla").then(message => {
       expect(message).toEqual("");
     });
   });
   test("promise with invalid input", () => {
     const requiredAsync = value => Promise.resolve(validations.required(value));
-    return validateWith(requiredAsync, "").then(message => {
+    return validateWithPromises(requiredAsync, "").then(message => {
       expect(message).toEqual("Required");
     });
   });
   test("promise array with valid input", () => {
-    return validateWith(
+    return validateWithPromises(
       [
         value => Promise.resolve(validations.required(value)),
         value => Promise.resolve(validations.name(value))
@@ -336,7 +246,7 @@ describe("validateWith()", () => {
     });
   });
   test("promise array with invalid input", () => {
-    return validateWith(
+    return validateWithPromises(
       [
         value => Promise.resolve(validations.required(value)),
         value => Promise.resolve(validations.name(value))
@@ -348,14 +258,14 @@ describe("validateWith()", () => {
   });
   test("handle missing validations", () => {
     try {
-      validateWith([], formFields, "");
+      validateWithPromises([], formFields, "");
     } catch (error) {
       expect(error instanceof Error).toBe(true);
     }
   });
   test("handle wrong validations", () => {
     try {
-      validateWith("", "");
+      validateWithPromises("", "");
     } catch (error) {
       expect(error instanceof Error).toBe(true);
     }

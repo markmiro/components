@@ -11,7 +11,37 @@ import { trace } from "./globals";
 
 const NO_ERROR = "";
 
-export const validateWith = (maybeValidationArray, toValidate) => {
+export const normalizeValidations = validations =>
+  isFunction(validations) ? validations : () => validations;
+
+// export const mapValidations = (validations, cb) =>
+//   mapValues(normalizeValidations(validations), (_, key) => cb(key));
+
+const throwIfInvalid = (normalizedValidations, fields, key) => {
+  // Throw right away since it's a programmer error
+  if (!(key in fields)) throw new Error(`"${key}" missing in "fields"`);
+  if (!(key in normalizedValidations))
+    throw new Error(
+      `"${key}" missing in "normalizedValidations" object or function return`
+    );
+};
+
+export const validate = (maybeValidationArray, toValidate) => {
+  const messages = castArray(maybeValidationArray)
+    .map(validation => validation(toValidate))
+    .filter(message => message !== NO_ERROR);
+  return messages.length === 0 ? "" : messages[0];
+};
+
+export const validateAll = (validations, fields) => {
+  const normalizedValidations = normalizeValidations(validations)(fields);
+  return mapValues(normalizedValidations, (maybeValidationArray, key) => {
+    throwIfInvalid(normalizedValidations, fields, key);
+    return validate(normalizedValidations[key], fields[key]);
+  });
+};
+
+export const validateWithPromises = (maybeValidationArray, toValidate) => {
   const maybePendingValidations = castArray(
     maybeValidationArray
   ).map(validation => validation(toValidate));
@@ -25,36 +55,7 @@ export const validateWith = (maybeValidationArray, toValidate) => {
   );
 };
 
-export const normalizeValidations = validations =>
-  isFunction(validations) ? validations : () => validations;
-
-export const validateWithPromise = (validations, fields, key) => {
-  const normalizedValidations = normalizeValidations(validations)(fields);
-
-  // Throw right away since it's a programmer error
-  if (!(key in fields)) throw new Error(`"${key}" missing in "fields"`);
-  if (!(key in normalizedValidations))
-    throw new Error(
-      `"${key}" missing in "validations" object or function return`
-    );
-
-  return validateWith(normalizedValidations[key], fields[key]);
-};
-
-// export const mapValidations = (validations, cb) =>
-//   mapValues(normalizeValidations(validations), (_, key) => cb(key));
-
-export const validateAll = (validations, formFields) =>
-  mapValues(
-    normalizeValidations(validations)(formFields),
-    (maybeValidationArray, fieldKey) =>
-      castArray(maybeValidationArray).map(validation => {
-        if (fieldKey in formFields) return validation(formFields[fieldKey]);
-        throw new Error(`"${fieldKey}" missing in "formFields"`);
-      })
-  );
-
-export const validateAllWithPromises = (validations, formFields) => {
+export const validateAllWithPromises = (validations, fields) => {
   /*
   Flatten the validations object so we can run `Promise.all`.
   Once they all resolve then we map the array back to the original
@@ -67,15 +68,23 @@ export const validateAllWithPromises = (validations, formFields) => {
   the error object being an instance of `Error`. This may be a good way to go,
   but we'd need to see it actually come up in a few projects before adding such logic.
   */
-  const supposedlyValidated = toPairs(validateAll(validations, formFields));
+  const normalizedValidations = normalizeValidations(validations)(fields);
+  const supposedlyValidated = mapValues(
+    normalizedValidations,
+    (maybeValidationArray, key) => {
+      throwIfInvalid(normalizedValidations, fields, key);
+      return validateWithPromises(normalizedValidations[key], fields[key]);
+    }
+  );
+  const supposedlyValidatedPairs = toPairs(supposedlyValidated);
   return Promise.all(
-    flatten(supposedlyValidated.map(([k, v]) => v))
+    flatten(supposedlyValidatedPairs.map(([k, v]) => v))
   ).then(flattenedResults => {
     let i = 0;
     return fromPairs(
-      supposedlyValidated.map(([k, resultArray]) => [
+      supposedlyValidatedPairs.map(([k, resultArray]) => [
         k,
-        resultArray.map(() => flattenedResults[i++])
+        castArray(resultArray).map(() => flattenedResults[i++])
       ])
     );
   });
