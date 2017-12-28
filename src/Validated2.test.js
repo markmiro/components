@@ -76,6 +76,89 @@ describe("validateAll()", () => {
   });
 });
 
+describe("validateWithPromises()", () => {
+  test("with multiple error messages", () => {
+    const isValidPassword = value => [
+      /[0-9]/.test(value) ? "" : "Please include a number",
+      /[A-Z]/.test(value) ? "" : "Please include a captital letter"
+    ];
+    validateWithPromises(isValidPassword, "bla").then(message =>
+      expect(message).toEqual([
+        "Please include a number",
+        "Please include a captital letter"
+      ])
+    );
+  });
+  test("with multiple error messages success", () => {
+    const isValidPassword = value =>
+      [
+        /[0-9]/.test(value) ? "" : "Please include a number",
+        /[A-Z]/.test(value) ? "" : "Please include a captital letter"
+      ].filter(message => message !== "");
+    validateWithPromises(isValidPassword, "blaA1").then(message =>
+      expect(message).toEqual("")
+    );
+  });
+  test("non-promise with valid input", () => {
+    return validateWithPromises(validations.required, "bla").then(message => {
+      expect(message).toEqual("");
+    });
+  });
+  test("non-promise with invalid input", () => {
+    return validateWithPromises(validations.required, "").then(message => {
+      expect(message).toEqual("Required");
+    });
+  });
+  test("promise with valid input", () => {
+    const requiredAsync = value => Promise.resolve(validations.required(value));
+    return validateWithPromises(requiredAsync, "bla").then(message => {
+      expect(message).toEqual("");
+    });
+  });
+  test("promise with invalid input", () => {
+    const requiredAsync = value => Promise.resolve(validations.required(value));
+    return validateWithPromises(requiredAsync, "").then(message => {
+      expect(message).toEqual("Required");
+    });
+  });
+  test("promise array with valid input", () => {
+    return validateWithPromises(
+      [
+        value => Promise.resolve(validations.required(value)),
+        value => Promise.resolve(validations.name(value))
+      ],
+      "bla"
+    ).then(message => {
+      expect(message).toEqual("");
+    });
+  });
+  test("promise array with invalid input", () => {
+    return validateWithPromises(
+      [
+        value => Promise.resolve(validations.required(value)),
+        value => Promise.resolve(validations.name(value))
+      ],
+      "b"
+    ).then(message => {
+      expect(message).toEqual("At least 2 characters required");
+    });
+  });
+  test("handle missing validations", () => {
+    try {
+      validateWithPromises([], formFields, "");
+    } catch (error) {
+      expect(error instanceof Error).toBe(true);
+    }
+  });
+  test("handle wrong validations", () => {
+    try {
+      validateWithPromises("", "");
+    } catch (error) {
+      expect(error instanceof Error).toBe(true);
+    }
+  });
+});
+
 describe("validateAllWithPromises()", () => {
   /*
   The function should work without promises because then the same
@@ -227,89 +310,6 @@ describe("validateAllWithPromises()", () => {
     const formFields = {};
     try {
       validateAllWithPromises(formValidations, formFields);
-    } catch (error) {
-      expect(error instanceof Error).toBe(true);
-    }
-  });
-});
-
-describe("validateWithPromises()", () => {
-  test("with multiple error messages", () => {
-    const isValidPassword = value => [
-      /[0-9]/.test(value) ? "" : "Please include a number",
-      /[A-Z]/.test(value) ? "" : "Please include a captital letter"
-    ];
-    validateWithPromises(isValidPassword, "bla").then(message =>
-      expect(message).toEqual([
-        "Please include a number",
-        "Please include a captital letter"
-      ])
-    );
-  });
-  test("with multiple error messages success", () => {
-    const isValidPassword = value =>
-      [
-        /[0-9]/.test(value) ? "" : "Please include a number",
-        /[A-Z]/.test(value) ? "" : "Please include a captital letter"
-      ].filter(message => message !== "");
-    validateWithPromises(isValidPassword, "blaA1").then(message =>
-      expect(message).toEqual("")
-    );
-  });
-  test("non-promise with valid input", () => {
-    return validateWithPromises(validations.required, "bla").then(message => {
-      expect(message).toEqual("");
-    });
-  });
-  test("non-promise with invalid input", () => {
-    return validateWithPromises(validations.required, "").then(message => {
-      expect(message).toEqual("Required");
-    });
-  });
-  test("promise with valid input", () => {
-    const requiredAsync = value => Promise.resolve(validations.required(value));
-    return validateWithPromises(requiredAsync, "bla").then(message => {
-      expect(message).toEqual("");
-    });
-  });
-  test("promise with invalid input", () => {
-    const requiredAsync = value => Promise.resolve(validations.required(value));
-    return validateWithPromises(requiredAsync, "").then(message => {
-      expect(message).toEqual("Required");
-    });
-  });
-  test("promise array with valid input", () => {
-    return validateWithPromises(
-      [
-        value => Promise.resolve(validations.required(value)),
-        value => Promise.resolve(validations.name(value))
-      ],
-      "bla"
-    ).then(message => {
-      expect(message).toEqual("");
-    });
-  });
-  test("promise array with invalid input", () => {
-    return validateWithPromises(
-      [
-        value => Promise.resolve(validations.required(value)),
-        value => Promise.resolve(validations.name(value))
-      ],
-      "b"
-    ).then(message => {
-      expect(message).toEqual("At least 2 characters required");
-    });
-  });
-  test("handle missing validations", () => {
-    try {
-      validateWithPromises([], formFields, "");
-    } catch (error) {
-      expect(error instanceof Error).toBe(true);
-    }
-  });
-  test("handle wrong validations", () => {
-    try {
-      validateWithPromises("", "");
     } catch (error) {
       expect(error instanceof Error).toBe(true);
     }
