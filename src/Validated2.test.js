@@ -198,7 +198,7 @@ describe("validateAllWithPromises()", () => {
       formFields
     ).then(({ username }) => expect(username).toBe(undefined));
   });
-  test("handle missing form fields by throwing errror", () => {
+  test("handle missing form fields by throwing error", () => {
     const formValidations = {
       username: value => Promise.resolve(validations.required(value))
     };
@@ -275,6 +275,28 @@ describe("validateWithPromise()", () => {
     ).then(message => {
       expect(message).toEqual("At least 2 characters required");
     });
+  });
+  test("handle missing validations", () => {
+    const formValidations = {};
+    const formFields = {
+      username: ""
+    };
+    try {
+      return validateWithPromise(formValidations, formFields, "username");
+    } catch (error) {
+      expect(error instanceof Error).toBe(true);
+    }
+  });
+  test("handle missing form fields by throwing error", () => {
+    const formValidations = {
+      username: value => Promise.resolve(validations.required(value))
+    };
+    const formFields = {};
+    try {
+      return validateWithPromise(formValidations, formFields, "username");
+    } catch (error) {
+      expect(error instanceof Error).toBe(true);
+    }
   });
 });
 

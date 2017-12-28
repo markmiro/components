@@ -59,19 +59,29 @@ export const validateAllWithPromises = (validations, formFields) => {
 export const validate = (validations, formFields, key) =>
   validateAll(validations, formFields)[key];
 
-/*
-TODO: always return the first error and no others for each validation
-Need to make it work for multiple
-*/
-export const validateWithPromise = (validations, formFields, key) => {
-  const validationsForKey = normalizeValidations(validations)(formFields)[key];
+export const validateWith = (maybeValidationArray, toValidate) => {
   const maybePendingValidations = castArray(
-    validationsForKey
-  ).map(validation => {
-    if (key in formFields) return validation(formFields[key]);
-    throw new Error(`"${key}" missing in "formFields"`);
-  });
+    maybeValidationArray
+  ).map(validation => validation(toValidate));
+
+  /*
+  Return the first non-empty `resolve` from `promises`
+  or an empty string if they all resolve to an empty string.
+  */
   return pLocate(maybePendingValidations, result => result !== NO_ERROR).then(
     result => (!result ? NO_ERROR : result)
   );
+};
+
+export const validateWithPromise = (validations, fields, key) => {
+  const normalizedValidations = normalizeValidations(validations)(fields);
+
+  // Throw right away since it's a programmer error
+  if (!(key in fields)) throw new Error(`"${key}" missing in "fields"`);
+  if (!(key in normalizedValidations))
+    throw new Error(
+      `"${key}" missing in "validations" object or function return`
+    );
+
+  return validateWith(normalizedValidations[key], fields[key]);
 };
