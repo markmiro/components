@@ -20,7 +20,7 @@ test("normalizeValidations()", () => {
 describe("validate()", () => {
   test("with invalid value", () => {
     const errorMessages = validate(validations.required, "");
-    expect(errorMessages).toEqual("Required");
+    expect(errorMessages).toEqual(["Required"]);
   });
   test("with valid value", () => {
     const errorMessages = validate(validations.required, "Bla");
@@ -33,8 +33,7 @@ describe("validate()", () => {
     ];
     const errorMessages = validate(isValidPassword, "bla");
     expect(errorMessages).toEqual([
-      "Please include a number",
-      "Please include a captital letter"
+      ["Please include a number", "Please include a captital letter"]
     ]);
   });
 });
@@ -46,7 +45,7 @@ describe("validateAll()", () => {
     };
     const errorMessages = validateAll({ name: validations.required }, fields);
     expect(errorMessages).toEqual({
-      name: "Required"
+      name: ["Required"]
     });
   });
   test("with valid field", () => {
@@ -72,7 +71,7 @@ describe("validateAll()", () => {
     );
     expect(errorMessages).toEqual({
       email: "",
-      name: "At least 2 characters required"
+      name: ["At least 2 characters required"]
     });
   });
 });
@@ -254,7 +253,7 @@ describe("validateWithPromises()", () => {
         /[A-Z]/.test(value) ? "" : "Please include a captital letter"
       ].filter(message => message !== "");
     validateWithPromises(isValidPassword, "blaA1").then(message =>
-      expect(message).toEqual([])
+      expect(message).toEqual("")
     );
   });
   test("non-promise with valid input", () => {

@@ -4,18 +4,29 @@ import {
   castArray,
   flatten,
   toPairs,
-  fromPairs
+  fromPairs,
+  isEmpty
 } from "lodash";
 import pLocate from "p-locate";
 import { trace } from "./globals";
 
-const NO_ERROR = "";
+/*
+TODO: consider allowing consumer to optionally define this.
+The rationale is that a validtion may return a non-string. However, we
+depend on comparisons to
+*/
+const EMPTY_ERROR_MESSAGE = "";
+
+const isNotEmpty = message => !isEmpty(message);
+
+const normalizeEmptyMessage = message =>
+  isEmpty(message) ? EMPTY_ERROR_MESSAGE : message;
 
 export const normalizeValidations = validations =>
   isFunction(validations) ? validations : () => validations;
 
-// export const mapValidations = (validations, cb) =>
-//   mapValues(normalizeValidations(validations), (_, key) => cb(key));
+export const mapValidations = (validations, cb) =>
+  mapValues(normalizeValidations(validations), (_, key) => cb(key));
 
 const throwIfInvalid = (normalizedValidations, fields, key) => {
   // Throw right away since it's a programmer error
@@ -29,8 +40,8 @@ const throwIfInvalid = (normalizedValidations, fields, key) => {
 export const validate = (maybeValidationArray, toValidate) => {
   const messages = castArray(maybeValidationArray)
     .map(validation => validation(toValidate))
-    .filter(message => message !== NO_ERROR);
-  return messages.length === 0 ? "" : messages[0];
+    .filter(isNotEmpty);
+  return normalizeEmptyMessage(messages);
 };
 
 export const validateAll = (validations, fields) => {
@@ -50,8 +61,8 @@ export const validateWithPromises = (maybeValidationArray, toValidate) => {
   Return the first non-empty `resolve` from `promises`
   or an empty string if they all resolve to an empty string.
   */
-  return pLocate(maybePendingValidations, result => result !== NO_ERROR).then(
-    result => (!result ? NO_ERROR : result)
+  return pLocate(maybePendingValidations, isNotEmpty).then(
+    normalizeEmptyMessage
   );
 };
 
