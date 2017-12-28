@@ -1,5 +1,5 @@
-export function trace(input) {
-  console.log("TRACE", input);
+export function trace(input, prefix = "TRACE") {
+  console.log(prefix, input);
   return input;
 }
 
