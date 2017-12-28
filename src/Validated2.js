@@ -58,24 +58,31 @@ export const validateAllWithPromises = (validations, formFields) => {
 export const validate = (validations, formFields, key) =>
   validateAll(validations, formFields)[key];
 
-const resolveFirstPromiseThatReturnsNonEmptyString = maybePromiseArray => {
-  const [promises, values] = partition(
-    maybePromiseArray,
-    maybePromise => maybePromise instanceof Promise
+const resolveFirstPromiseThatReturnsNonEmptyString = arrayOfMaybePromises => {
+  // Normalize everything into a promise
+  const promises = arrayOfMaybePromises.map(
+    maybePromise =>
+      maybePromise instanceof Promise
+        ? maybePromise
+        : Promise.resolve(maybePromise)
   );
-  if (values.length > 0) {
-    return Promise.resolve(values[0]);
-  }
-  // TODO: consider doing a `Promise.race`, but for the first non-empty `resolve` instead.
-  if (promises.length > 0) {
-    return Promise.all(promises).then(results => {
-      return (
-        results.filter(result => result !== NO_ERROR)[0] ||
-        Promise.resolve(NO_ERROR)
-      );
-    });
-  }
-  return Promise.resolve(NO_ERROR);
+  /*
+  Return the first non-empty `resolve` from `promises`
+  or an empty string if they all resolve to an empty string.
+  */
+  let resolved = 0;
+  return new Promise((resolve, reject) => {
+    promises.map(promise =>
+      promise.then(result => {
+        resolved++;
+        if (result !== NO_ERROR) {
+          resolve(result);
+        } else if (resolved === promises.length) {
+          resolve(NO_ERROR);
+        }
+      })
+    );
+  });
 };
 
 /*
@@ -84,11 +91,11 @@ Need to make it work for multiple
 */
 export const validateWithPromise = (validations, formFields, key) => {
   const validationsForKey = normalizeValidations(validations)(formFields)[key];
-  const maybePendingValidations = castArray(validationsForKey)
-    .map(validation => {
-      if (key in formFields) return validation(formFields[key]);
-      throw new Error(`"${key}" missing in "formFields"`);
-    })
-    .filter(message => message !== NO_ERROR);
+  const maybePendingValidations = castArray(
+    validationsForKey
+  ).map(validation => {
+    if (key in formFields) return validation(formFields[key]);
+    throw new Error(`"${key}" missing in "formFields"`);
+  });
   return resolveFirstPromiseThatReturnsNonEmptyString(maybePendingValidations);
 };
