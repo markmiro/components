@@ -8,6 +8,7 @@ import {
   fromPairs,
   partition
 } from "lodash";
+import pLocate from "p-locate";
 import { trace } from "./globals";
 
 const NO_ERROR = "";
@@ -58,33 +59,6 @@ export const validateAllWithPromises = (validations, formFields) => {
 export const validate = (validations, formFields, key) =>
   validateAll(validations, formFields)[key];
 
-const resolveFirstPromiseThatReturnsNonEmptyString = arrayOfMaybePromises => {
-  // Normalize everything into a promise
-  const promises = arrayOfMaybePromises.map(
-    maybePromise =>
-      maybePromise instanceof Promise
-        ? maybePromise
-        : Promise.resolve(maybePromise)
-  );
-  /*
-  Return the first non-empty `resolve` from `promises`
-  or an empty string if they all resolve to an empty string.
-  */
-  let resolved = 0;
-  return new Promise((resolve, reject) => {
-    promises.map(promise =>
-      promise.then(result => {
-        resolved++;
-        if (result !== NO_ERROR) {
-          resolve(result);
-        } else if (resolved === promises.length) {
-          resolve(NO_ERROR);
-        }
-      })
-    );
-  });
-};
-
 /*
 TODO: always return the first error and no others for each validation
 Need to make it work for multiple
@@ -97,5 +71,7 @@ export const validateWithPromise = (validations, formFields, key) => {
     if (key in formFields) return validation(formFields[key]);
     throw new Error(`"${key}" missing in "formFields"`);
   });
-  return resolveFirstPromiseThatReturnsNonEmptyString(maybePendingValidations);
+  return pLocate(maybePendingValidations, result => result !== NO_ERROR).then(
+    result => (!result ? NO_ERROR : result)
+  );
 };
