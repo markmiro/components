@@ -218,7 +218,7 @@ describe("validateWithPromise()", () => {
       { username: "bla" },
       "username"
     ).then(message => {
-      expect(message).toEqual([]);
+      expect(message).toEqual("");
     });
   });
   test("non-promise with invalid input", () => {
@@ -227,7 +227,7 @@ describe("validateWithPromise()", () => {
       { username: "" },
       "username"
     ).then(message => {
-      expect(message).toEqual(["Required"]);
+      expect(message).toEqual("Required");
     });
   });
   test("promise with valid input", () => {
@@ -236,7 +236,7 @@ describe("validateWithPromise()", () => {
       { username: "bla" },
       "username"
     ).then(message => {
-      expect(message).toEqual([]);
+      expect(message).toEqual("");
     });
   });
   test("promise with invalid input", () => {
@@ -245,7 +245,7 @@ describe("validateWithPromise()", () => {
       { username: "" },
       "username"
     ).then(message => {
-      expect(message).toEqual(["Required"]);
+      expect(message).toEqual("Required");
     });
   });
   test("promise array with valid input", () => {
@@ -259,7 +259,7 @@ describe("validateWithPromise()", () => {
       { username: "bla" },
       "username"
     ).then(message => {
-      expect(message).toEqual([]);
+      expect(message).toEqual("");
     });
   });
   test("promise array with invalid input", () => {
@@ -273,7 +273,7 @@ describe("validateWithPromise()", () => {
       { username: "b" },
       "username"
     ).then(message => {
-      expect(message).toEqual(["At least 2 characters required"]);
+      expect(message).toEqual("At least 2 characters required");
     });
   });
 });

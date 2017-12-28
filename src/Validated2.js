@@ -5,9 +5,12 @@ import {
   flatten,
   values,
   toPairs,
-  fromPairs
+  fromPairs,
+  partition
 } from "lodash";
 import { trace } from "./globals";
+
+const NO_ERROR = "";
 
 export const normalizeValidations = validations =>
   isFunction(validations) ? validations : () => validations;
@@ -55,20 +58,37 @@ export const validateAllWithPromises = (validations, formFields) => {
 export const validate = (validations, formFields, key) =>
   validateAll(validations, formFields)[key];
 
+const resolveFirstPromiseThatReturnsNonEmptyString = maybePromiseArray => {
+  const [promises, values] = partition(
+    maybePromiseArray,
+    maybePromise => maybePromise instanceof Promise
+  );
+  if (values.length > 0) {
+    return Promise.resolve(values[0]);
+  }
+  // TODO: consider doing a `Promise.race`, but for the first non-empty `resolve` instead.
+  if (promises.length > 0) {
+    return Promise.all(promises).then(results => {
+      return (
+        results.filter(result => result !== NO_ERROR)[0] ||
+        Promise.resolve(NO_ERROR)
+      );
+    });
+  }
+  return Promise.resolve(NO_ERROR);
+};
+
 /*
-TODO: add streaming validation so that validation happens right away and then
-when async validations happen then it responds with those too. Need to decide exactly
-how that's gonna work:
-  - Is this function going to "return" multiple times?
-  - Should we race async errors so that we return as soon as we get something?
-  - How would the consumer deal with this?
+TODO: always return the first error and no others for each validation
+Need to make it work for multiple
 */
 export const validateWithPromise = (validations, formFields, key) => {
   const validationsForKey = normalizeValidations(validations)(formFields)[key];
-  return Promise.all(
-    castArray(validationsForKey).map(validation => {
+  const maybePendingValidations = castArray(validationsForKey)
+    .map(validation => {
       if (key in formFields) return validation(formFields[key]);
       throw new Error(`"${key}" missing in "formFields"`);
     })
-  ).then(response => response.filter(message => message !== ""));
+    .filter(message => message !== NO_ERROR);
+  return resolveFirstPromiseThatReturnsNonEmptyString(maybePendingValidations);
 };
