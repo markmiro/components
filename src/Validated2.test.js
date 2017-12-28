@@ -222,6 +222,27 @@ describe("validateAllWithPromises()", () => {
       expect(result).toEqual({ username: ["Required"], email: ["Required"] });
     });
   });
+  test("handle missing validations", () => {
+    const formValidations = {};
+    const formFields = {
+      username: ""
+    };
+    return validateAllWithPromises(
+      formValidations,
+      formFields
+    ).then(({ username }) => expect(username).toBe(undefined));
+  });
+  test("handle missing form fields by throwing error", () => {
+    const formValidations = {
+      username: value => Promise.resolve(validations.required(value))
+    };
+    const formFields = {};
+    try {
+      validateAllWithPromises(formValidations, formFields);
+    } catch (error) {
+      expect(error instanceof Error).toBe(true);
+    }
+  });
 
   /*
   Ideally, the user wouldn't be using validators that reject on invalid input
@@ -292,26 +313,5 @@ describe("validateAllWithPromises()", () => {
     return validateAllWithPromises(formValidations, formFields).catch(error => {
       expect(error instanceof TypeError).toBe(true);
     });
-  });
-  test("handle missing validations", () => {
-    const formValidations = {};
-    const formFields = {
-      username: ""
-    };
-    return validateAllWithPromises(
-      formValidations,
-      formFields
-    ).then(({ username }) => expect(username).toBe(undefined));
-  });
-  test("handle missing form fields by throwing error", () => {
-    const formValidations = {
-      username: value => Promise.resolve(validations.required(value))
-    };
-    const formFields = {};
-    try {
-      validateAllWithPromises(formValidations, formFields);
-    } catch (error) {
-      expect(error instanceof Error).toBe(true);
-    }
   });
 });
