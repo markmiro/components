@@ -27,6 +27,19 @@ const NO_VALIDATION = null;
 // return new function that takes an argument and passes it down to all functions
 const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
+/*
+TODO:
+Use `shouldComponentUpdate` to prevent wasted renders
+*/
+
+/*
+Rendering
+---
+This component does 3-staged rendering:
+  1) Set field value
+  2) Validate
+  3) Update `_shouldShake` to be false
+*/
 export default class Validated extends Component {
   constructor(props) {
     super(props);
@@ -109,11 +122,25 @@ export default class Validated extends Component {
 
     const clear = () => setMessage(NO_VALIDATION);
 
-    // TODO: sometimes updates are out of sync
-    const validate = () =>
-      validateWithPromises(this.props.validations[key], this.state[key]).then(
-        setMessage
+    const validate = () => {
+      /*
+      Some extra logic is added for this scenario:
+      - We start with a field with a sync validation and an async one
+      - User types good input (for sync and async) followed by bad input (for sync) in field with NO_ERROR
+      - The validation for good input starts running
+      - Validation for bad input starts running
+      - Validation for bad input returns right away
+      - Validation for good input returns later because async validation takes time
+
+      The solution is to check that the validation message still applies by
+      making sure that we only set the error message if the field value matches
+      the value we had when the validation was triggered.
+      */
+      const toValidate = this.state[key];
+      validateWithPromises(this.props.validations[key], toValidate).then(
+        message => toValidate === this.state[key] && setMessage(message)
       );
+    };
 
     const validateIfInvalid = e =>
       this.setState({ [key]: e.target.value }, state => {
