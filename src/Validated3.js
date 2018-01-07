@@ -142,12 +142,11 @@ export default class Validated extends Component {
       );
     };
 
-    const validateIfInvalid = e =>
-      this.setState({ [key]: e.target.value }, state => {
-        if (![NO_VALIDATION, NO_ERROR].includes(this.state._messages[key])) {
-          validate();
-        }
-      });
+    const validateIfValidated = e =>
+      this.setState(
+        { [key]: e.target.value },
+        () => this.state._messages[key] !== NO_VALIDATION && validate()
+      );
 
     const validateIfNonEmpty = e => {
       this.state[key] ? validate() : clear();
@@ -158,7 +157,7 @@ export default class Validated extends Component {
     const getProps = ({ onChange, onBlur, ...rest } = {}) => ({
       name: key,
       value: this.state[key], // You can extract state, but you can't set it
-      onChange: compose(validateIfInvalid, onChange),
+      onChange: compose(validateIfValidated, onChange),
       onBlur: compose(validateIfNonEmpty, onBlur),
       innerRef: setRef,
       ...rest
@@ -167,7 +166,7 @@ export default class Validated extends Component {
       value: this.state[key],
       validate,
       validateValue: value => this.setState({ [key]: value }, validate),
-      validateIfInvalid,
+      validateIfValidated,
       validateIfNonEmpty,
       ref: setRef,
       validationMessage: this.state._messages[key],
