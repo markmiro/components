@@ -2,6 +2,7 @@ import validations from "./validations2";
 import validator from "validator";
 import { without } from "lodash";
 import {
+    mapValidations,
     normalizeValidations,
     validate,
     validateAll,
@@ -20,6 +21,18 @@ test("normalizeValidations()", () => {
     expect(normalized()).toBe(validations);
 });
 
+test("mapValidations()", () => {
+    const validations = {
+        name: () => "",
+        email: () => ""
+    };
+    const mapped = mapValidations(validations, () => "testValue");
+    expect(mapped).toEqual({
+        name: "testValue",
+        email: "testValue"
+    });
+});
+
 describe("validate()", () => {
     test("with invalid value", () => {
         const errorMessages = validate(validations.required, "");
@@ -34,9 +47,12 @@ describe("validate()", () => {
             /[0-9]/.test(value) ? "" : "Please include a number",
             /[A-Z]/.test(value) ? "" : "Please include a captital letter"
         ];
-        const errorMessages = validate(isValidPassword, "bla");
-        expect(errorMessages).toEqual([
+        expect(validate(isValidPassword, "bla")).toEqual([
             "Please include a number",
+            "Please include a captital letter"
+        ]);
+        expect(validate(isValidPassword, "1la")).toEqual([
+            "",
             "Please include a captital letter"
         ]);
     });
