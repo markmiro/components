@@ -31,7 +31,9 @@ export const normalizeValidations = validations =>
     isFunction(validations) ? validations : () => validations;
 
 export const mapValidations = (validations, cb) =>
-    mapValues(normalizeValidations(validations), (_, key) => cb(key));
+    mapValues(normalizeValidations(validations)(), (value, key) =>
+        cb(key, value)
+    );
 
 export const validateAllWithFunction = (
     validations,
@@ -70,13 +72,21 @@ export const validateWithPromises = (maybeValidationArray, toValidate) =>
         isNotEmpty
     ).then(normalizeNil);
 
-export const validateAllWithPromises = (validations, fields) => {
-    debugger;
-    const [keys, values] = unzip(
-        toPairs(
-            validateAllWithFunction(validations, fields, validateWithPromises)
-        )
+export const validateAllWithPromises = (validations, fields, onValidate) => {
+    const validationPromises = validateAllWithFunction(
+        validations,
+        fields,
+        validateWithPromises
     );
+
+    onValidate &&
+        mapValues(validationPromises, (promise, key) =>
+            promise.then(message => {
+                onValidate(key, message);
+            })
+        );
+
+    const [keys, values] = unzip(toPairs(validationPromises));
     /*
   NOTE: `Promise.all` doesn't exactly do what we want if the consumer
   of decides to have invalid inputs `reject`. We have no good way of

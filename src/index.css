@@ -40,6 +40,7 @@ hr {
 a {
     color: hsl(217, 71%, 55%);
 }
+
 @keyframes fade-out {
     0% {
         opacity: 0.45;
@@ -62,4 +63,29 @@ a {
     100% {
         opacity: 1;
     }
+}
+
+/* https://css-tricks.com/snippets/css/shake-css-keyframe-animation */
+@keyframes shake {
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+    20%,
+    80% {
+        transform: translate3d(1px, 0, 0);
+    }
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-3px, 0, 0);
+    }
+    40%,
+    60% {
+        transform: translate3d(3px, 0, 0);
+    }
+}
+
+.shake {
+    animation: shake 500ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
