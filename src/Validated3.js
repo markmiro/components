@@ -48,11 +48,6 @@ export default class Validated extends Component {
         state => {
           const shouldFocus = !state._keyFocused && message;
           if (shouldFocus && this._refs[key]) {
-            this._refs[key].scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-              inline: "center"
-            });
             this._refs[key].focus();
           }
           return {
