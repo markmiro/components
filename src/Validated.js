@@ -34,7 +34,7 @@ import {
 // - Allow using a mix of internal and external state
 // - Add masks
 // - Have feature parity with `redux-form` and `Angular 5` forms
-//   - States: pristine, untouched, touched, invalid, valid
+//   - States: pristine, untouched, touched, dirty, invalid, valid
 // - Make `allValid` if user types into last field and gets it right (before blur)
 
 // TO TEST:

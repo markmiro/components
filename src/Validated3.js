@@ -29,7 +29,19 @@ const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
 /*
 TODO:
-Use `shouldComponentUpdate` to prevent wasted renders
+- Dependant fields
+- Default field values
+- Use `shouldComponentUpdate` to prevent wasted renders
+- Fix bug where wrong input is highlighted when a set of fields each have
+  an array of validations. It looks like we go through the first item in each
+  array and highlight the first field with an error. If there are no errors,
+  then we go to the next item in each array and repeat.
+
+  However, it's not so bad since we focus the field that is most wrong since you
+  usually set "required" validation for each input and then the actual
+  validation. This way we encourage users to complete the form and then fix
+  little errors and mistakes. Then again, we don't make this philosophy explicit
+  anywhere else such as by showing an error on only the wrong field.
 */
 
 /*
