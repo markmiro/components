@@ -6,6 +6,7 @@ import {
   isEmpty,
   isObject,
   filter,
+  every,
   isNil,
   zipObject,
   unzip,
@@ -34,6 +35,9 @@ export const mapValidations = (validations, cb) =>
   mapValues(normalizeValidations(validations)(), (value, key) =>
     cb(key, value)
   );
+
+export const areAllValid = messages =>
+  every(messages, message => message === PREFERRED_NIL);
 
 export const validateAllWithFunction = (
   validations,
@@ -68,19 +72,12 @@ export const validateWithPromises = (maybeValidationArray, toValidate) =>
     isNotEmpty
   ).then(normalizeNil);
 
-export const validateAllWithPromises = (validations, fields, onValidate) => {
+export const validateAllWithPromises = (validations, fields) => {
   const validationPromises = validateAllWithFunction(
     validations,
     fields,
     validateWithPromises
   );
-
-  onValidate &&
-    mapValues(validationPromises, (promise, key) =>
-      promise.then(message => {
-        onValidate(key, message);
-      })
-    );
 
   const [keys, values] = unzip(toPairs(validationPromises));
   /*

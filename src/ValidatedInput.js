@@ -5,6 +5,7 @@ const ValidatedInput = ({
   label,
   errorMessage,
   shouldShake,
+  isValidating,
   placeholder,
   helper,
   ...props
@@ -15,7 +16,10 @@ const ValidatedInput = ({
   //   helper && helper.shouldShake ? helper.shouldShake : shouldShake;
   const shouldShakeClass = shouldShake ? "shake" : null;
   return (
-    <div className={shouldShakeClass}>
+    <div
+      className={shouldShakeClass}
+      style={{ opacity: isValidating ? 0.6 : 1 }}
+    >
       {!placeholder && <Label>{label}</Label>}
       <Input
         status={finalErrorMessage && "error"}

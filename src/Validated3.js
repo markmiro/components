@@ -4,7 +4,6 @@ import {
   mapValues,
   forEach,
   includes,
-  every,
   isFunction,
   isEmpty,
   castArray,
@@ -13,6 +12,7 @@ import {
   findKey
 } from "lodash";
 import {
+  areAllValid,
   normalizeValidations,
   mapValidations,
   validateWithPromises,
@@ -29,7 +29,9 @@ const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
 /*
 TODO:
-- Default field values
+- Add checkmark to valid fields
+- Support being controlled or uncontrolled
+- Have a state for fields that are still validating
 - Use `shouldComponentUpdate` to prevent wasted renders
 - If user focuses a field, typed bad input, then presses ENTER key, then we want
   to highlight that field rather than the first one with an error.
@@ -47,10 +49,20 @@ TODO:
 DOUBLECHECK:
 - Dependent field validation. Maybe we should validate all fields on input and
   only show errors for current field? The downside is it's a lot of validation
-  to be doing. But maybe not doing it woul dbe premature optimization.
-*/
+  to be doing. But maybe not doing it would be premature optimization.
+- It used to be designed so that form submission validates in realtime where
+  validation messages are displayed as soon as they're resolved. The upside is
+  that users get to see messages right away and can fix some problems while
+  other fields are being processed. The downside is you may end up getting
+  errors appearing for a different field while you're still typing to fix an
+  error in the one you're in. It may stress people out. It may be better to
+  only show errors when all the async validations resolve.
 
-/*
+  If we show errors as they're resolved then individual fields should be in a
+  "validating" state until they're resolved. If we wait until all are resolved
+  then it's best to put the form in a "validating" state (and therefore
+  disabled) until all validations are resolved.
+
 Rendering
 ---
 This component does 3-staged rendering:
@@ -68,49 +80,43 @@ export default class Validated extends Component {
       // Since state keys are defined by consumer, we need a name that can't conflict
       _messages: mapValidations(props.validations, () => NO_VALIDATION),
       _shouldShake: mapValidations(props.validations, () => ""),
+      _isValidating: mapValidations(props.validations, () => false),
+      _isValidatingAll: false,
       _keyFocused: null
     };
   }
-  fields = () => omit(this.state, ["_messages", "_shouldShake", "_keyFocused"]);
-  _validateAll = cb => {
-    this.setState({ _keyFocused: null });
-    const onChange = (key, message) => {
-      this.setState(
-        state => {
-          const shouldFocus = !state._keyFocused && message;
-          if (shouldFocus && this._refs[key]) {
-            this._refs[key].focus();
-          }
-          return {
-            _messages: {
-              ...state._messages,
-              [key]: message
-            },
-            _shouldShake: {
-              ...state._shouldShake,
-              [key]: shouldFocus
-            },
-            _keyFocused: shouldFocus ? key : state._keyFocused
-          };
-        },
-        () =>
-          window.setTimeout(
-            () =>
-              this.setState(state => ({
-                _shouldShake: {
-                  ...state._shouldShake,
-                  [key]: false
-                }
-              })),
-            500
-          )
-      );
-    };
-    validateAllWithPromises(
-      this.props.validations,
-      this.fields(),
-      onChange
-    ).then(_messages => cb(this.fields(), _messages, true));
+  fields = () =>
+    omit(this.state, [
+      "_messages",
+      "_shouldShake",
+      "_isValidating",
+      "_isValidatingAll",
+      "_keyFocused"
+    ]);
+  _validateAll = onValidate => {
+    // TODO: if there are already some messages then just highlight the first field with a message
+    this.setState({
+      _keyFocused: null,
+      _isValidatingAll: true,
+      _shouldShake: mapValidations(this.props.validations, () => false)
+    });
+    validateAllWithPromises(this.props.validations, this.fields()).then(
+      messages => {
+        onValidate(this.fields(), messages, areAllValid(messages));
+        const keyToFocus = findKey(messages, message => !!message);
+        this._refs[keyToFocus] && this._refs[keyToFocus].focus();
+        this.setState({
+          _messages: messages,
+          // Shake the first one with an error
+          _shouldShake: mapValidations(
+            this.props.validations,
+            key => key === keyToFocus
+          ),
+          _keyFocused: keyToFocus,
+          _isValidatingAll: false
+        });
+      }
+    );
   };
   _helpersForKey = key => {
     const setMessage = message =>
@@ -123,6 +129,10 @@ export default class Validated extends Component {
           _shouldShake: {
             ...state._shouldShake,
             [key]: !!message && !state._messages[key]
+          },
+          _isValidating: {
+            ...state._isValidating,
+            [key]: false
           }
         }),
         () =>
@@ -158,6 +168,12 @@ export default class Validated extends Component {
       const validation = normalizeValidations(this.props.validations)(
         this.fields()
       )[key];
+      this.setState({
+        _isValidating: {
+          ...this.state._isValidating,
+          [key]: true
+        }
+      });
       validateWithPromises(validation, toValidate).then(
         message => toValidate === this.state[key] && setMessage(message)
       );
@@ -183,6 +199,13 @@ export default class Validated extends Component {
       innerRef: setRef,
       ...rest
     });
+
+    const customProps = {
+      validationMessage: this.state._messages[key],
+      shouldShake: this.state._shouldShake[key],
+      isValidating: this.state._isValidating[key]
+    };
+
     return {
       value: this.state[key],
       validate,
@@ -190,18 +213,20 @@ export default class Validated extends Component {
       validateIfValidated,
       validateIfNonEmpty,
       ref: setRef,
-      validationMessage: this.state._messages[key],
-      shouldShake: this.state._shouldShake[key],
-      watch: element => <element.type {...getProps(element.props)} />
+      watch: element => <element.type {...getProps(element.props)} />,
+      ...customProps,
+      customProps
     };
   };
   render = () => {
     const fieldHelpers = mapValidations(this.props.validations, key =>
       this._helpersForKey(key)
     );
-    return this.props.render(fieldHelpers, {
-      validateAll: this._validateAll
-    });
+    const generalHelpers = {
+      validateAll: this._validateAll,
+      isValidating: this.state._isValidatingAll
+    };
+    return this.props.render(fieldHelpers, generalHelpers);
   };
 }
 

@@ -23,9 +23,14 @@ const isEmailUniqe = email =>
   new Promise(resolve =>
     setTimeout(
       () => resolve(email === "bla@bla.com" ? "Email exists" : ""),
-      1500
+      700
     )
   );
+
+const shouldNotBeYourEmail = email => password =>
+  email === password
+    ? "Your password should not be the same as your email"
+    : "";
 
 class SimpleForm extends React.Component {
   state = { acceptedTerms: false };
@@ -40,22 +45,32 @@ class SimpleForm extends React.Component {
         ],
         password: [
           value => [validations.required(value)],
-          validations.password
+          validations.password,
+          value => [shouldNotBeYourEmail(state.email)(value)]
         ],
         acceptTerms: didAccept =>
           didAccept ? "" : "Please accept to the terms to continue"
       })}
       onSubmit={(fields, messages, isValid) =>
-        JSON.stringify(fields, null, "  ")
+        isValid && alert(JSON.stringify(fields, null, "  "))
       }
-      render={({ username, email, confirmEmail, password, acceptTerms }) => (
-        <VerticalSpacer space="1em">
+      render={(
+        { username, email, confirmEmail, password, acceptTerms },
+        { isValidating }
+      ) => (
+        <VerticalSpacer
+          space="1em"
+          style={{
+            opacity: isValidating ? 0.6 : 1
+          }}
+        >
           <h1>Create Account</h1>
           {username.watch(
             <ValidatedInput
               label="Username"
               errorMessage={username.validationMessage}
               shouldShake={username.shouldShake}
+              isValidating={username.isValidating}
             />
           )}
           {email.watch(
@@ -63,6 +78,7 @@ class SimpleForm extends React.Component {
               label="Email"
               errorMessage={email.validationMessage}
               shouldShake={email.shouldShake}
+              isValidating={email.isValidating}
             />
           )}
           {confirmEmail.watch(
@@ -70,6 +86,7 @@ class SimpleForm extends React.Component {
               label="Confirm Email"
               errorMessage={confirmEmail.validationMessage}
               shouldShake={confirmEmail.shouldShake}
+              isValidating={confirmEmail.isValidating}
             />
           )}
           {password.watch(
@@ -82,6 +99,7 @@ class SimpleForm extends React.Component {
                   .map(message => <div key={message}>{message}</div>)
               }
               shouldShake={password.shouldShake}
+              isValidating={password.isValidating}
             />
           )}
           <div className={acceptTerms.shouldShake ? "shake" : ""}>
