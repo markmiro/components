@@ -29,9 +29,10 @@ const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
 /*
 TODO:
-- Dependant fields
 - Default field values
 - Use `shouldComponentUpdate` to prevent wasted renders
+- If user focuses a field, typed bad input, then presses ENTER key, then we want
+  to highlight that field rather than the first one with an error.
 - Fix bug where wrong input is highlighted when a set of fields each have
   an array of validations. It looks like we go through the first item in each
   array and highlight the first field with an error. If there are no errors,
@@ -42,6 +43,11 @@ TODO:
   validation. This way we encourage users to complete the form and then fix
   little errors and mistakes. Then again, we don't make this philosophy explicit
   anywhere else such as by showing an error on only the wrong field.
+
+DOUBLECHECK:
+- Dependent field validation. Maybe we should validate all fields on input and
+  only show errors for current field? The downside is it's a lot of validation
+  to be doing. But maybe not doing it woul dbe premature optimization.
 */
 
 /*
@@ -149,7 +155,10 @@ export default class Validated extends Component {
       the value we had when the validation was triggered.
       */
       const toValidate = this.state[key];
-      validateWithPromises(this.props.validations[key], toValidate).then(
+      const validation = normalizeValidations(this.props.validations)(
+        this.fields()
+      )[key];
+      validateWithPromises(validation, toValidate).then(
         message => toValidate === this.state[key] && setMessage(message)
       );
     };

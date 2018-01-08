@@ -31,20 +31,24 @@ class SimpleForm extends React.Component {
   state = { acceptedTerms: false };
   render = () => (
     <ValidatedForm
-      validations={{
+      validations={state => ({
         username: [validations.required, validations.name],
         email: [validations.required, ...validations.email, isEmailUniqe],
+        confirmEmail: [
+          validations.required,
+          value => validations.confirmEmail(state.email, value)
+        ],
         password: [
           value => [validations.required(value)],
           validations.password
         ],
         acceptTerms: didAccept =>
           didAccept ? "" : "Please accept to the terms to continue"
-      }}
+      })}
       onSubmit={(fields, messages, isValid) =>
         JSON.stringify(fields, null, "  ")
       }
-      render={({ username, email, password, acceptTerms }) => (
+      render={({ username, email, confirmEmail, password, acceptTerms }) => (
         <VerticalSpacer space="1em">
           <h1>Create Account</h1>
           {username.watch(
@@ -61,7 +65,13 @@ class SimpleForm extends React.Component {
               shouldShake={email.shouldShake}
             />
           )}
-          <ValidatedInput label="Confirm Email" />
+          {confirmEmail.watch(
+            <ValidatedInput
+              label="Confirm Email"
+              errorMessage={confirmEmail.validationMessage}
+              shouldShake={confirmEmail.shouldShake}
+            />
+          )}
           {password.watch(
             <ValidatedInput
               label="Password"
