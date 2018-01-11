@@ -16,7 +16,7 @@ import {
   normalizeValidations,
   mapValidations,
   validateWithPromises,
-  validateAllWithPromises
+  validateAllExceptPromises
 } from "./Validated2";
 import { trace } from "./globals";
 
@@ -29,9 +29,8 @@ const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
 /*
 TODO:
-- Add checkmark to valid fields
-- Support being controlled or uncontrolled
-- Have a state for fields that are still validating
+- Fix debounced validations being impossible
+- Support being controlled or uncontrolled (for field values and messages)
 - Use `shouldComponentUpdate` to prevent wasted renders
 - If user focuses a field, typed bad input, then presses ENTER key, then we want
   to highlight that field rather than the first one with an error.
@@ -100,21 +99,25 @@ export default class Validated extends Component {
       _isValidatingAll: true,
       _shouldShake: mapValidations(this.props.validations, () => false)
     });
-    validateAllWithPromises(this.props.validations, this.fields()).then(
-      messages => {
+    const messages = validateAllExceptPromises(
+      this.props.validations,
+      this.fields()
+    );
+    const keyToFocus = findKey(messages, message => !!message);
+    this._refs[keyToFocus] && this._refs[keyToFocus].focus();
+    this.setState(
+      {
+        _messages: messages,
+        // Shake the first one with an error
+        _shouldShake: mapValidations(
+          this.props.validations,
+          key => key === keyToFocus
+        ),
+        _keyFocused: keyToFocus,
+        _isValidatingAll: false
+      },
+      () => {
         onValidate(this.fields(), messages, areAllValid(messages));
-        const keyToFocus = findKey(messages, message => !!message);
-        this._refs[keyToFocus] && this._refs[keyToFocus].focus();
-        this.setState({
-          _messages: messages,
-          // Shake the first one with an error
-          _shouldShake: mapValidations(
-            this.props.validations,
-            key => key === keyToFocus
-          ),
-          _keyFocused: keyToFocus,
-          _isValidatingAll: false
-        });
       }
     );
   };
@@ -203,7 +206,8 @@ export default class Validated extends Component {
     const customProps = {
       validationMessage: this.state._messages[key],
       shouldShake: this.state._shouldShake[key],
-      isValidating: this.state._isValidating[key]
+      isValidating: this.state._isValidating[key],
+      isValid: this.state._messages[key] === NO_ERROR
     };
 
     return {

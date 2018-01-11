@@ -1,11 +1,12 @@
 import React from "react";
-import { Input, Label, InputMessage } from "./FormComponents";
+import { Input, Label, InputMessage, Loading } from "./FormComponents";
 
 const ValidatedInput = ({
   label,
   errorMessage,
   shouldShake,
   isValidating,
+  isValid,
   placeholder,
   helper,
   ...props
@@ -16,11 +17,14 @@ const ValidatedInput = ({
   //   helper && helper.shouldShake ? helper.shouldShake : shouldShake;
   const shouldShakeClass = shouldShake ? "shake" : null;
   return (
-    <div
-      className={shouldShakeClass}
-      style={{ opacity: isValidating ? 0.6 : 1 }}
-    >
-      {!placeholder && <Label>{label}</Label>}
+    <div className={shouldShakeClass}>
+      {!placeholder && (
+        <Label style={{ display: "flex", justifyContent: "space-between" }}>
+          {label}
+          {isValidating && <Loading />}
+          {!isValidating && isValid && <span>✔</span>}
+        </Label>
+      )}
       <Input
         status={finalErrorMessage && "error"}
         placeholder={placeholder}
