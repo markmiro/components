@@ -8,7 +8,7 @@ import {
   validateAll,
   validateAllWithPromises,
   validateWithPromises
-} from "./Validated2";
+} from "./validationRunner";
 import { trace } from "./globals";
 
 // TODO: test dependent fields

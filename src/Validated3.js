@@ -17,7 +17,7 @@ import {
   mapValidations,
   validateWithPromises,
   validateAllExceptPromises
-} from "./Validated2";
+} from "./validationRunner";
 import { trace } from "./globals";
 
 const EMPTY_VALUE = "";

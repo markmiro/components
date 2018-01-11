@@ -10,14 +10,6 @@ import {
   VerticalSpacer,
   InputMessage
 } from "./FormComponents";
-import {
-  normalizeValidations,
-  validate,
-  validateAll,
-  validateAllWithPromises,
-  validateWithPromises
-} from "./Validated2";
-import { traceFunc } from "./globals";
 
 const isEmailUniqe = email =>
   new Promise(resolve =>
