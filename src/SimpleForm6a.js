@@ -27,9 +27,9 @@ const isEmailUniqe = email =>
     )
   );
 
-const shouldNotBeYourEmail = email => password =>
-  email === password
-    ? "Your password should not be the same as your email"
+const shouldNotContainYourEmail = email => password =>
+  password.includes(email) || email.includes(password)
+    ? "Your password should not include any part of your email"
     : "";
 
 class SimpleForm extends React.Component {
@@ -46,7 +46,7 @@ class SimpleForm extends React.Component {
         password: [
           value => [validations.required(value)],
           validations.password,
-          value => [shouldNotBeYourEmail(state.email)(value)]
+          value => [shouldNotContainYourEmail(state.email)(value)]
         ],
         acceptTerms: didAccept =>
           didAccept ? "" : "Please accept to the terms to continue"
@@ -69,24 +69,21 @@ class SimpleForm extends React.Component {
             <ValidatedInput
               label="Username"
               errorMessage={username.validationMessage}
-              shouldShake={username.shouldShake}
-              isValidating={username.isValidating}
+              {...username.customProps}
             />
           )}
           {email.watch(
             <ValidatedInput
               label="Email"
               errorMessage={email.validationMessage}
-              shouldShake={email.shouldShake}
-              isValidating={email.isValidating}
+              {...email.customProps}
             />
           )}
           {confirmEmail.watch(
             <ValidatedInput
               label="Confirm Email"
               errorMessage={confirmEmail.validationMessage}
-              shouldShake={confirmEmail.shouldShake}
-              isValidating={confirmEmail.isValidating}
+              {...confirmEmail.customProps}
             />
           )}
           {password.watch(
@@ -98,8 +95,7 @@ class SimpleForm extends React.Component {
                   .filter(message => !!message)
                   .map(message => <div key={message}>{message}</div>)
               }
-              shouldShake={password.shouldShake}
-              isValidating={password.isValidating}
+              {...password.customProps}
             />
           )}
           <div className={acceptTerms.shouldShake ? "shake" : ""}>
