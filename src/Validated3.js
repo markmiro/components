@@ -149,12 +149,10 @@ export default class Validated extends Component {
       making sure that we only set the error message if the field value matches
       the value we had when the validation was triggered.
       */
-      const toValidate = this.state[key];
       const validation = normalizeValidations(this.props.validations)(
         this.fields()
       )[key];
-      const message = validate(validation, toValidate);
-      toValidate === this.state[key] && setMessage(message);
+      setMessage(validate(validation, this.state[key]));
     };
 
     const validateIfValidated = e =>
