@@ -6,17 +6,21 @@ import chroma from "chroma-js";
 
 const BORDER_RADIUS = "0.3rem";
 
+const ERROR_COLOR = "hsl(349, 66%, 53%)";
+const WARNING_COLOR = "hsl(40, 100%, 31%)";
+const SUCCESS_COLOR = "hsl(141, 90%, 28%)";
+
 const statusColor = (defaultColor, alpha = 1) => ({ status }) =>
   (status === "error" &&
-    chroma("hsl(349, 66%, 53%)")
+    chroma(ERROR_COLOR)
       .alpha(alpha)
       .css()) ||
   (status === "warning" &&
-    chroma("hsl(40, 100%, 31%)")
+    chroma(WARNING_COLOR)
       .alpha(alpha)
       .css()) ||
   (status === "success" &&
-    chroma("hsl(141, 90%, 28%)")
+    chroma(SUCCESS_COLOR)
       .alpha(alpha)
       .css()) ||
   defaultColor;
@@ -26,8 +30,9 @@ export const FinePrint = styled.div`
   color: rgba(0, 0, 0, 0.5);
 `;
 
+const INPUT_PADDING_H = "0.9em";
 const FormControlBase = styled.input`
-  padding: 0.6em 0.9em;
+  padding: 0.6em ${INPUT_PADDING_H};
   font-size: inherit;
   border-width: 1px;
   border-style: solid;
@@ -65,6 +70,29 @@ const InputField = FormControlBase.extend`
 `;
 
 export const Input = InputField.withComponent("input");
+
+const AdvancedInputContainer = styled.div`
+  position: relative;
+`;
+
+const AdvancedInputCheck = styled.div`
+  position: absolute;
+  top: 50%;
+  right: ${INPUT_PADDING_H};
+  transform: translateY(-50%);
+  user-select: none;
+  color: ${SUCCESS_COLOR};
+`;
+
+export const AdvancedInput = ({ isValid, ...props }) => {
+  const maybePaddingToFitCheck = isValid ? { paddingRight: "2.5em" } : {};
+  return (
+    <AdvancedInputContainer>
+      <Input {...props} style={{ ...props.style, ...maybePaddingToFitCheck }} />
+      {isValid && <AdvancedInputCheck>✔</AdvancedInputCheck>}
+    </AdvancedInputContainer>
+  );
+};
 
 export const TextArea = InputField.withComponent("textarea").extend`
     overflow: auto;

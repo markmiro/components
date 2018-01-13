@@ -1,5 +1,11 @@
 import React from "react";
-import { Input, Label, InputMessage, Loading } from "./FormComponents";
+import {
+  Input,
+  AdvancedInput,
+  Label,
+  InputMessage,
+  Loading
+} from "./FormComponents";
 
 const ValidatedInput = ({
   label,
@@ -17,15 +23,11 @@ const ValidatedInput = ({
   const shouldShakeClass = shouldShake ? "shake" : null;
   return (
     <div className={shouldShakeClass}>
-      {!placeholder && (
-        <Label style={{ display: "flex", justifyContent: "space-between" }}>
-          {label}
-          {isValid && <span>✔</span>}
-        </Label>
-      )}
-      <Input
+      {!placeholder && <Label>{label}</Label>}
+      <AdvancedInput
         status={finalErrorMessage && "error"}
         placeholder={placeholder}
+        isValid={isValid}
         {...finalProps}
       />
       {finalErrorMessage && (
