@@ -15,8 +15,8 @@ import {
   areAllValid,
   normalizeValidations,
   mapValidations,
-  validateWithPromises,
-  validateAllExceptPromises
+  validate,
+  validateAll
 } from "./validationRunner";
 import { trace } from "./globals";
 
@@ -79,30 +79,17 @@ export default class Validated extends Component {
       // Since state keys are defined by consumer, we need a name that can't conflict
       _messages: mapValidations(props.validations, () => NO_VALIDATION),
       _shouldShake: mapValidations(props.validations, () => ""),
-      _isValidating: mapValidations(props.validations, () => false),
-      _isValidatingAll: false,
       _keyFocused: null
     };
   }
-  fields = () =>
-    omit(this.state, [
-      "_messages",
-      "_shouldShake",
-      "_isValidating",
-      "_isValidatingAll",
-      "_keyFocused"
-    ]);
+  fields = () => omit(this.state, ["_messages", "_shouldShake", "_keyFocused"]);
   _validateAll = onValidate => {
     // TODO: if there are already some messages then just highlight the first field with a message
     this.setState({
       _keyFocused: null,
-      _isValidatingAll: true,
       _shouldShake: mapValidations(this.props.validations, () => false)
     });
-    const messages = validateAllExceptPromises(
-      this.props.validations,
-      this.fields()
-    );
+    const messages = validateAll(this.props.validations, this.fields());
     const keyToFocus = findKey(messages, message => !!message);
     this._refs[keyToFocus] && this._refs[keyToFocus].focus();
     this.setState(
@@ -113,8 +100,7 @@ export default class Validated extends Component {
           this.props.validations,
           key => key === keyToFocus
         ),
-        _keyFocused: keyToFocus,
-        _isValidatingAll: false
+        _keyFocused: keyToFocus
       },
       () => {
         onValidate(this.fields(), messages, areAllValid(messages));
@@ -132,10 +118,6 @@ export default class Validated extends Component {
           _shouldShake: {
             ...state._shouldShake,
             [key]: !!message && !state._messages[key]
-          },
-          _isValidating: {
-            ...state._isValidating,
-            [key]: false
           }
         }),
         () =>
@@ -153,7 +135,7 @@ export default class Validated extends Component {
 
     const clear = () => setMessage(NO_VALIDATION);
 
-    const validate = () => {
+    const validateField = () => {
       /*
       Some extra logic is added for this scenario:
       - We start with a field with a sync validation and an async one
@@ -171,25 +153,18 @@ export default class Validated extends Component {
       const validation = normalizeValidations(this.props.validations)(
         this.fields()
       )[key];
-      this.setState({
-        _isValidating: {
-          ...this.state._isValidating,
-          [key]: true
-        }
-      });
-      validateWithPromises(validation, toValidate).then(
-        message => toValidate === this.state[key] && setMessage(message)
-      );
+      const message = validate(validation, toValidate);
+      toValidate === this.state[key] && setMessage(message);
     };
 
     const validateIfValidated = e =>
       this.setState(
         { [key]: e.target.value },
-        () => this.state._messages[key] !== NO_VALIDATION && validate()
+        () => this.state._messages[key] !== NO_VALIDATION && validateField()
       );
 
     const validateIfNonEmpty = e => {
-      this.state[key] ? validate() : clear();
+      this.state[key] ? validateField() : clear();
     };
 
     const setRef = node => (this._refs[key] = node);
@@ -206,14 +181,13 @@ export default class Validated extends Component {
     const customProps = {
       validationMessage: this.state._messages[key],
       shouldShake: this.state._shouldShake[key],
-      isValidating: this.state._isValidating[key],
       isValid: this.state._messages[key] === NO_ERROR
     };
 
     return {
       value: this.state[key],
-      validate,
-      validateValue: value => this.setState({ [key]: value }, validate),
+      validateField,
+      validateValue: value => this.setState({ [key]: value }, validateField),
       validateIfValidated,
       validateIfNonEmpty,
       ref: setRef,
@@ -227,8 +201,7 @@ export default class Validated extends Component {
       this._helpersForKey(key)
     );
     const generalHelpers = {
-      validateAll: this._validateAll,
-      isValidating: this.state._isValidatingAll
+      validateAll: this._validateAll
     };
     return this.props.render(fieldHelpers, generalHelpers);
   };

@@ -5,7 +5,6 @@ const ValidatedInput = ({
   label,
   errorMessage,
   shouldShake,
-  isValidating,
   isValid,
   placeholder,
   helper,
@@ -21,8 +20,7 @@ const ValidatedInput = ({
       {!placeholder && (
         <Label style={{ display: "flex", justifyContent: "space-between" }}>
           {label}
-          {isValidating && <Loading />}
-          {!isValidating && isValid && <span>✔</span>}
+          {isValid && <span>✔</span>}
         </Label>
       )}
       <Input

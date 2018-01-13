@@ -24,8 +24,6 @@ depend on comparisons to
 const isNotEmpty = message =>
   isObject(message) ? !isEmpty(filter(message, isNotEmpty)) : !!message;
 
-const notPromise = maybePromise => !(maybePromise instanceof Promise);
-
 const PREFERRED_NIL = "";
 
 const normalizeNil = value => (isNil(value) ? PREFERRED_NIL : value);
@@ -63,17 +61,6 @@ export const validate = (maybeValidationArray, toValidate) =>
   );
 
 export const validateAll = (validations, fields) =>
-  validateAllWithFunction(validations, fields, validate);
-
-export const validateExceptPromises = (maybeValidationArray, toValidate) =>
-  normalizeNil(
-    castArray(maybeValidationArray)
-      .map(validation => validation(toValidate))
-      .filter(notPromise)
-      .find(isNotEmpty)
-  );
-
-export const validateAllExceptPromises = (validations, fields) =>
   validateAllWithFunction(validations, fields, validate);
 
 /*

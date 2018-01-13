@@ -2,7 +2,7 @@ import React from "react";
 import { ValidatedForm } from "./Validated3";
 import validations from "./validations2";
 import validator from "validator";
-import { without } from "lodash";
+import { debounce } from "lodash";
 import ValidatedInput from "./ValidatedInput";
 import {
   ButtonSuperPrimary,
@@ -10,14 +10,15 @@ import {
   VerticalSpacer,
   InputMessage
 } from "./FormComponents";
+import { trace } from "./globals";
 
-const isEmailUniqe = email =>
-  new Promise(resolve =>
-    setTimeout(
-      () => resolve(email === "bla@bla.com" ? "Email exists" : ""),
-      700
-    )
+const isEmailUnique = (email, cb) =>
+  setTimeout(
+    () => cb(trace(email) === "bla@bla.com" ? "Email exists" : ""),
+    700
   );
+
+const isEmailUniqueDebounced = debounce(isEmailUnique, 500);
 
 const shouldNotContainYourEmail = email => password =>
   password.includes(email) || email.includes(password)
@@ -25,12 +26,17 @@ const shouldNotContainYourEmail = email => password =>
     : "";
 
 class SimpleForm extends React.Component {
-  state = { acceptedTerms: false };
+  state = {
+    acceptedTerms: false,
+    email: "",
+    isCheckingIfEmailUnique: false,
+    isEmailUniqueMessage: ""
+  };
   render = () => (
     <ValidatedForm
       validations={state => ({
         username: [validations.required, validations.name],
-        email: [validations.required, ...validations.email, isEmailUniqe],
+        email: [validations.required, ...validations.email],
         confirmEmail: [
           validations.required,
           value => validations.confirmEmail(state.email, value)
@@ -67,7 +73,16 @@ class SimpleForm extends React.Component {
           {email.watch(
             <ValidatedInput
               label="Email"
-              errorMessage={email.validationMessage}
+              errorMessage={
+                email.validationMessage || this.state.isEmailUniqueMessage
+              }
+              onChange={e => {
+                const email = e.target.value;
+                this.setState({ email });
+                isEmailUniqueDebounced(email, message => {
+                  this.setState({ isEmailUniqueMessage: message });
+                });
+              }}
               {...email.customProps}
             />
           )}
