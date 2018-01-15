@@ -63,14 +63,13 @@ class SimpleForm extends React.Component {
           }}
         >
           <h1>Create Account</h1>
-          {username.watch(
+          {username.watchFull(
             <ValidatedInput
               label="Username"
               errorMessage={username.validationMessage}
-              {...username.customProps}
             />
           )}
-          {email.watch(
+          {email.watchFull(
             <ValidatedInput
               label="Email"
               errorMessage={
@@ -83,17 +82,15 @@ class SimpleForm extends React.Component {
                   this.setState({ isEmailUniqueMessage: message });
                 });
               }}
-              {...email.customProps}
             />
           )}
-          {confirmEmail.watch(
+          {confirmEmail.watchFull(
             <ValidatedInput
               label="Confirm Email"
               errorMessage={confirmEmail.validationMessage}
-              {...confirmEmail.customProps}
             />
           )}
-          {password.watch(
+          {password.watchFull(
             <ValidatedInput
               label="Password"
               errorMessage={
@@ -102,7 +99,6 @@ class SimpleForm extends React.Component {
                   .filter(message => !!message)
                   .map(message => <div key={message}>{message}</div>)
               }
-              {...password.customProps}
             />
           )}
           <div className={acceptTerms.shouldShake ? "shake" : ""}>

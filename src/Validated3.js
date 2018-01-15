@@ -189,9 +189,11 @@ export default class Validated extends Component {
       validateIfValidated,
       validateIfNonEmpty,
       ref: setRef,
-      watch: element => <element.type {...getProps(element.props)} />,
       ...customProps,
-      customProps
+      watch: element => <element.type {...getProps(element.props)} />,
+      watchFull: element => (
+        <element.type {...getProps(element.props)} {...customProps} />
+      )
     };
   };
   render = () => {
