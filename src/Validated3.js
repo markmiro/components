@@ -108,6 +108,9 @@ export default class Validated extends Component {
     );
   };
   _helpersForKey = key => {
+    const isControlled = () => this.props.controlledValues[key] !== undefined;
+    const getValue = () =>
+      isControlled() ? this.props.controlledValues[key] : this.state[key];
     const setMessage = message =>
       this.setState(
         state => ({
@@ -152,24 +155,28 @@ export default class Validated extends Component {
       const validation = normalizeValidations(this.props.validations)(
         this.fields()
       )[key];
-      setMessage(validate(validation, this.state[key]));
+      setMessage(validate(validation, getValue()));
     };
 
-    const validateIfValidated = e =>
-      this.setState(
-        { [key]: e.target.value },
-        () => this.state._messages[key] !== NO_VALIDATION && validateField()
-      );
+    const validateIfValidated = e => {
+      const doIt = () =>
+        this.state._messages[key] !== NO_VALIDATION && validateField();
+      if (isControlled()) {
+        doIt();
+      } else {
+        this.setState({ [key]: e.target.value }, doIt);
+      }
+    };
 
     const validateIfNonEmpty = e => {
-      this.state[key] ? validateField() : clear();
+      getValue() ? validateField() : clear();
     };
 
     const setRef = node => (this._refs[key] = node);
 
     const getProps = ({ onChange, onBlur, ...rest } = {}) => ({
       name: key,
-      value: this.state[key], // You can extract state, but you can't set it
+      value: getValue(), // You can extract state, but you can't set it
       onChange: compose(validateIfValidated, onChange),
       onBlur: compose(validateIfNonEmpty, onBlur),
       innerRef: setRef,
@@ -183,7 +190,7 @@ export default class Validated extends Component {
     };
 
     return {
-      value: this.state[key],
+      value: getValue(),
       validateField,
       validateValue: value => this.setState({ [key]: value }, validateField),
       validateIfValidated,

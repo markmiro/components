@@ -49,6 +49,11 @@ class SimpleForm extends React.Component {
         acceptTerms: didAccept =>
           didAccept ? "" : "Please accept to the terms to continue"
       })}
+      controlledValues={{
+        username: this.state.username,
+        email: this.state.email,
+        acceptedTerms: this.state.acceptedTerms
+      }}
       onSubmit={(fields, messages, isValid) =>
         isValid && alert(JSON.stringify(fields, null, "  "))
       }
@@ -66,6 +71,7 @@ class SimpleForm extends React.Component {
           {username.watchFull(
             <ValidatedInput
               label="Username"
+              onChange={e => this.setState({ username: e.target.value })}
               errorMessage={username.validationMessage}
             />
           )}
