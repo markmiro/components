@@ -29,6 +29,7 @@ const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
 /*
 TODO:
+- Assert that keys between props: controlledValues and validations match
 - Fix debounced validations being impossible
 - Support being controlled or uncontrolled (for field values and messages)
 - Use `shouldComponentUpdate` to prevent wasted renders

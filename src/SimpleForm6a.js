@@ -27,7 +27,7 @@ const shouldNotContainYourEmail = email => password =>
 
 class SimpleForm extends React.Component {
   state = {
-    acceptedTerms: false,
+    acceptTerms: false,
     email: "",
     isCheckingIfEmailUnique: false,
     isEmailUniqueMessage: ""
@@ -52,7 +52,7 @@ class SimpleForm extends React.Component {
       controlledValues={{
         username: this.state.username,
         email: this.state.email,
-        acceptedTerms: this.state.acceptedTerms
+        acceptTerms: this.state.acceptTerms
       }}
       onSubmit={(fields, messages, isValid) =>
         isValid && alert(JSON.stringify(fields, null, "  "))
@@ -111,11 +111,11 @@ class SimpleForm extends React.Component {
             <Label style={{ marginBottom: 0 }}>
               <input
                 type="checkbox"
-                checked={this.state.acceptedTerms}
+                checked={this.state.acceptTerms}
                 onChange={e => {
                   acceptTerms.validateValue(e.target.checked);
                   this.setState({
-                    acceptedTerms: e.target.checked
+                    acceptTerms: e.target.checked
                   });
                 }}
                 ref={acceptTerms.ref}
