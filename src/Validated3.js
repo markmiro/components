@@ -73,6 +73,7 @@ This component does 3-staged rendering:
 export default class Validated extends Component {
   constructor(props) {
     super(props);
+    this._validateAll = this._validateAll.bind(this);
     this._refs = {};
     const empty = mapValidations(props.validations, () => EMPTY_VALUE);
     this.state = {
@@ -83,7 +84,11 @@ export default class Validated extends Component {
       _keyFocused: null
     };
   }
-  fields = () => omit(this.state, ["_messages", "_shouldShake", "_keyFocused"]);
+  fields = () =>
+    trace({
+      ...omit(this.state, ["_messages", "_shouldShake", "_keyFocused"]),
+      ...this.props.controlledValues
+    });
   _validateAll = onValidate => {
     // TODO: if there are already some messages then just highlight the first field with a message
     this.setState({

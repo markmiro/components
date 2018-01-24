@@ -22,6 +22,7 @@ const isEmailUniqueDebounced = debounce(isEmailUnique, 500);
 
 class SimpleForm extends React.Component {
   state = {
+    username: "",
     acceptTerms: false,
     email: "",
     isCheckingIfEmailUnique: false,
