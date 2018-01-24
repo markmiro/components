@@ -84,11 +84,10 @@ export default class Validated extends Component {
       _keyFocused: null
     };
   }
-  fields = () =>
-    trace({
-      ...omit(this.state, ["_messages", "_shouldShake", "_keyFocused"]),
-      ...this.props.controlledValues
-    });
+  fields = () => ({
+    ...omit(this.state, ["_messages", "_shouldShake", "_keyFocused"]),
+    ...this.props.controlledValues
+  });
   _validateAll = onValidate => {
     // TODO: if there are already some messages then just highlight the first field with a message
     this.setState({
@@ -115,8 +114,7 @@ export default class Validated extends Component {
   };
   _helpersForKey = key => {
     const isControlled = () => this.props.controlledValues[key] !== undefined;
-    const getValue = () =>
-      isControlled() ? this.props.controlledValues[key] : this.state[key];
+    const getValue = () => this.fields()[key];
     const setMessage = message =>
       this.setState(
         state => ({
@@ -166,7 +164,8 @@ export default class Validated extends Component {
 
     const validateIfValidated = e => {
       const doIt = () =>
-        this.state._messages[key] !== NO_VALIDATION && validateField();
+        this.state._messages[key] !== NO_VALIDATION &&
+        setTimeout(validateField);
       if (isControlled()) {
         doIt();
       } else {
