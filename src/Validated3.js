@@ -75,15 +75,19 @@ export default class Validated extends Component {
     super(props);
     this._validateAll = this._validateAll.bind(this);
     this._refs = {};
-    const empty = mapValidations(props.validations, () => EMPTY_VALUE);
-    this.state = {
+    this.state = this._emptyState();
+  }
+  _emptyState = () => {
+    const empty = mapValidations(this.props.validations, () => EMPTY_VALUE);
+    return {
       ...empty,
       // Since state keys are defined by consumer, we need a name that can't conflict
-      _messages: mapValidations(props.validations, () => NO_VALIDATION),
-      _shouldShake: mapValidations(props.validations, () => ""),
+      _messages: mapValidations(this.props.validations, () => NO_VALIDATION),
+      _shouldShake: mapValidations(this.props.validations, () => ""),
       _keyFocused: null
     };
-  }
+  };
+  _reset = () => this.setState(this._emptyState);
   fields = () => ({
     ...omit(this.state, ["_messages", "_shouldShake", "_keyFocused"]),
     ...this.props.controlledValues
@@ -213,7 +217,8 @@ export default class Validated extends Component {
       this._helpersForKey(key)
     );
     const generalHelpers = {
-      validateAll: this._validateAll
+      validateAll: this._validateAll,
+      reset: this._reset
     };
     return this.props.render(fieldHelpers, generalHelpers);
   };
