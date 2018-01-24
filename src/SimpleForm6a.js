@@ -20,11 +20,6 @@ const isEmailUnique = (email, cb) =>
 
 const isEmailUniqueDebounced = debounce(isEmailUnique, 500);
 
-const shouldNotContainYourEmail = email => password =>
-  password.includes(email) || email.includes(password)
-    ? "Your password should not include any part of your email"
-    : "";
-
 class SimpleForm extends React.Component {
   state = {
     acceptTerms: false,
@@ -43,8 +38,7 @@ class SimpleForm extends React.Component {
         ],
         password: [
           value => [validations.required(value)],
-          validations.password,
-          value => [shouldNotContainYourEmail(state.email)(value)]
+          validations.password
         ],
         acceptTerms: didAccept =>
           didAccept ? "" : "Please accept to the terms to continue"
