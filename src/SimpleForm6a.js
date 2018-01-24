@@ -6,6 +6,7 @@ import { debounce } from "lodash";
 import ValidatedInput from "./ValidatedInput";
 import {
   Button,
+  ButtonGroupH,
   ButtonSuperPrimary,
   Label,
   VerticalSpacer,
@@ -123,19 +124,33 @@ class SimpleForm extends React.Component {
           </div>
 
           <ButtonSuperPrimary type="submit">Submit</ButtonSuperPrimary>
-          <Button
-            type="button"
-            onClick={() => {
-              this.setState({
-                username: "",
-                email: "",
-                acceptTerms: false
-              });
-              reset();
-            }}
-          >
-            Reset
-          </Button>
+          <ButtonGroupH>
+            <Button
+              type="button"
+              onClick={() => {
+                this.setState({
+                  username: "",
+                  email: "",
+                  acceptTerms: false
+                });
+                reset();
+              }}
+            >
+              Reset
+            </Button>
+            <Button
+              type="button"
+              onClick={() =>
+                this.setState({
+                  username: "markmiro",
+                  email: "something@something.com",
+                  acceptTerms: true
+                })
+              }
+            >
+              Autofill
+            </Button>
+          </ButtonGroupH>
         </VerticalSpacer>
       )}
     />
