@@ -54,14 +54,9 @@ class SimpleForm extends React.Component {
       }
       render={(
         { username, email, confirmEmail, password, acceptTerms },
-        { isValidating }
+        { reset }
       ) => (
-        <VerticalSpacer
-          space="1em"
-          style={{
-            opacity: isValidating ? 0.6 : 1
-          }}
-        >
+        <VerticalSpacer space="1em">
           <h1>Create Account</h1>
           {username.watchFull(
             <ValidatedInput
