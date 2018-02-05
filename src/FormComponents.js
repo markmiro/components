@@ -75,21 +75,62 @@ const AdvancedInputContainer = styled.div`
   position: relative;
 `;
 
-const AdvancedInputCheck = styled.div`
+export const Loading = ({ isVisible, style }) => (
+  <span style={style}>
+    <span
+      style={{
+        paddingLeft: "0",
+        animation: "fade-out2 1000ms 0ms ease-in-out infinite"
+      }}
+    >
+      •
+    </span>
+    <span
+      style={{
+        paddingLeft: "0.15em",
+        animation: "fade-out2 1000ms 333ms ease-in-out infinite"
+      }}
+    >
+      •
+    </span>
+    <span
+      style={{
+        paddingLeft: "0.15em",
+        animation: "fade-out2 1000ms 667ms ease-in-out infinite"
+      }}
+    >
+      •
+    </span>
+  </span>
+);
+Loading.defaultProps = {
+  isVisible: true
+};
+
+const AdvancedInputIcon = styled.div`
   position: absolute;
   top: 50%;
   right: ${INPUT_PADDING_H};
   transform: translateY(-50%);
   user-select: none;
-  color: ${SUCCESS_COLOR};
 `;
 
-export const AdvancedInput = ({ isValid, ...props }) => {
+export const AdvancedInput = ({ isValid, isValidating, ...props }) => {
   const maybePaddingToFitCheck = isValid ? { paddingRight: "2.5em" } : {};
   return (
     <AdvancedInputContainer>
       <Input {...props} style={{ ...props.style, ...maybePaddingToFitCheck }} />
-      {isValid && <AdvancedInputCheck>✔</AdvancedInputCheck>}
+      {isValid &&
+        !isValidating && (
+          <AdvancedInputIcon style={{ color: SUCCESS_COLOR }}>
+            ✔
+          </AdvancedInputIcon>
+        )}
+      {isValidating && (
+        <AdvancedInputIcon>
+          <Loading />
+        </AdvancedInputIcon>
+      )}
     </AdvancedInputContainer>
   );
 };
@@ -237,38 +278,6 @@ export class FadeOut extends Component {
     );
   }
 }
-
-export const Loading = ({ isVisible, style }) => (
-  <span style={style}>
-    <span
-      style={{
-        paddingLeft: "0",
-        animation: "fade-out2 1000ms 0ms ease-in-out infinite"
-      }}
-    >
-      •
-    </span>
-    <span
-      style={{
-        paddingLeft: "0.15em",
-        animation: "fade-out2 1000ms 333ms ease-in-out infinite"
-      }}
-    >
-      •
-    </span>
-    <span
-      style={{
-        paddingLeft: "0.15em",
-        animation: "fade-out2 1000ms 667ms ease-in-out infinite"
-      }}
-    >
-      •
-    </span>
-  </span>
-);
-Loading.defaultProps = {
-  isVisible: true
-};
 
 export const Fill = styled.div`
   min-height: 100%;
