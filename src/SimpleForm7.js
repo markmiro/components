@@ -7,14 +7,20 @@ class SimpleForm7 extends React.Component {
   render = () => (
     <div>
       <ValidatedForm
-        validations={{ a: value => (value === "3" ? "Invalid" : "") }}
+        validations={{ a: value => (value.bla === 2 ? "Invalid" : "") }}
         render={({ a }) => (
           <div>
             {a.watchFull(
               <ResponsiveSelect useRadio>
-                <ResponsiveOption value="1">AAAAAAAA</ResponsiveOption>
-                <ResponsiveOption value="2">BBBBBBBB</ResponsiveOption>
-                <ResponsiveOption value="3">CCCCCCCC</ResponsiveOption>
+                <ResponsiveOption value={{ bla: 1 }}>
+                  Valid 111
+                </ResponsiveOption>
+                <ResponsiveOption value={{ bla: 2 }}>
+                  Invalid 222
+                </ResponsiveOption>
+                <ResponsiveOption value={{ bla: 3 }}>
+                  Valid 333
+                </ResponsiveOption>
               </ResponsiveSelect>
             )}
             <InputMessage status="error">{a.validationMessage}</InputMessage>

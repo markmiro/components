@@ -23,7 +23,7 @@ const hiddenStyles = {
 
 throttleEvent("resize", "optimizedResize");
 
-export const ResponsiveOption = ({ children, styles }) => <div>{children}</div>;
+export const ResponsiveOption = ({ children }) => <div>{children}</div>;
 
 export default class ResponsiveSelect extends Component {
   state = {
@@ -54,7 +54,16 @@ export default class ResponsiveSelect extends Component {
       <div>
         {goVertical &&
           useSelect && (
-            <Select value={value} onChange={e => onChange(e.target.value)}>
+            <Select
+              value={value}
+              onChange={e => {
+                const childArray = React.Children.toArray(children);
+                const child = childArray.find(
+                  child => child.props.value.toString() === e.target.value
+                );
+                onChange(child.props.value);
+              }}
+            >
               {React.Children.map(children, child => (
                 <option {...child.props} />
               ))}
@@ -67,9 +76,9 @@ export default class ResponsiveSelect extends Component {
                 <LabeledCheckboxOrRadio
                   type="radio"
                   label={child.props.children}
-                  checked={child.props.value.toString() === value}
+                  checked={child.props.value === value}
                   onChange={e =>
-                    e.target.checked && onChange(child.props.value.toString())
+                    e.target.checked && onChange(child.props.value)
                   }
                 />
               ))}
@@ -82,8 +91,8 @@ export default class ResponsiveSelect extends Component {
               {React.Children.map(children, child => (
                 <Button
                   {...child.props}
-                  onClick={() => onChange(child.props.value.toString())}
-                  selected={child.props.value.toString() === value}
+                  onClick={() => onChange(child.props.value)}
+                  selected={child.props.value === value}
                 />
               ))}
             </ButtonGroupV>
@@ -97,8 +106,8 @@ export default class ResponsiveSelect extends Component {
           {React.Children.map(children, child => (
             <Button
               {...child.props}
-              onClick={() => onChange(child.props.value.toString())}
-              selected={child.props.value.toString() === value}
+              onClick={() => onChange(child.props.value)}
+              selected={child.props.value === value}
             />
           ))}
         </ButtonGroupH>
