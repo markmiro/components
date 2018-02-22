@@ -1,21 +1,23 @@
 import React from "react";
 import { ValidatedForm } from "./Validated3";
-import ValidatedInput from "./ValidatedInput";
-import { RadioGroup } from "./FormComponents";
+import ResponsiveSelect, { ResponsiveOption } from "./ResponsiveSelect";
+import { InputMessage } from "./FormComponents";
 
 class SimpleForm7 extends React.Component {
   render = () => (
     <div>
       <ValidatedForm
-        validations={{ a: () => {}, b: () => {} }}
-        render={({ a, b }) => (
+        validations={{ a: value => (value === "3" ? "Invalid" : "") }}
+        render={({ a }) => (
           <div>
             {a.watchFull(
-              <ValidatedInput name="foobar" label="One" type="radio" />
+              <ResponsiveSelect useRadio>
+                <ResponsiveOption value="1">AAAAAAAA</ResponsiveOption>
+                <ResponsiveOption value="2">BBBBBBBB</ResponsiveOption>
+                <ResponsiveOption value="3">CCCCCCCC</ResponsiveOption>
+              </ResponsiveSelect>
             )}
-            {b.watchFull(
-              <ValidatedInput name="foobar" label="Two" type="radio" />
-            )}
+            <InputMessage status="error">{a.validationMessage}</InputMessage>
           </div>
         )}
       />

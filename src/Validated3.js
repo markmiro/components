@@ -170,16 +170,27 @@ export default class Validated extends Component {
       setMessage(validate(validation, getValue()));
     };
 
-    const validateIfValidated = e => {
+    const validateIfValidated = eventOrValue => {
       const doIt = () =>
         this.state._messages[key] !== NO_VALIDATION &&
         setTimeout(validateField);
       if (isControlled()) {
         doIt();
       } else {
-        // Ignore "radio" case
-        const value =
-          e.target.type === "checkbox" ? e.target.checked : e.target.value;
+        let value;
+        if (
+          eventOrValue &&
+          eventOrValue.constructor &&
+          eventOrValue.constructor.name === "SyntheticEvent"
+        ) {
+          const event = eventOrValue;
+          value =
+            event.target.type === "checkbox"
+              ? event.target.checked
+              : event.target.value;
+        } else {
+          value = eventOrValue;
+        }
         this.setState({ [key]: value }, doIt);
       }
     };
