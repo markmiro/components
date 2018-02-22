@@ -191,6 +191,13 @@ export const Select = Button.withComponent("select").extend`
   vertical-align: middle;
 `;
 
+export const LabeledCheckboxOrRadio = ({ label, ...rest }) => (
+  <Label style={{ marginBottom: 0 }}>
+    <input {...rest} />
+    <span style={{ marginLeft: ".5em" }}>{label}</span>
+  </Label>
+);
+
 export const ButtonPrimary = styled(Button)`
   border-color: transparent;
   background-color: #333;
@@ -286,12 +293,22 @@ export const Fill = styled.div`
   justify-content: center;
 `;
 
-export const PageCard = styled.div`
+export const PageCardCenter = styled.div`
   padding: 1.5em;
   width: 25em;
   // border-radius: ${BORDER_RADIUS};
   // background: white;
   // box-shadow: 0px 2px 5px rgba(0,0,0,0.2), 0px 3px 40px 3px rgba(0,0,0,0.1);
+`;
+
+export const PageCard = styled.div`
+  padding-top: 5vw;
+  padding-bottom: 5vw;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+  max-width: 25em;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 export const Text = ({ children }) => {

@@ -22,7 +22,8 @@ import {
   TextArea,
   Text,
   ButtonGroupV,
-  ButtonGroupH
+  ButtonGroupH,
+  LabeledCheckboxOrRadio
 } from "../FormComponents";
 import ResponsiveSelect, { ResponsiveOption } from "../ResponsiveSelect";
 import ResizerParent from "../ResizerParent";
@@ -34,10 +35,11 @@ import SimpleForm1 from "../SimpleForm1";
 import SimpleForm2 from "../SimpleForm2";
 import SimpleForm3 from "../SimpleForm3";
 import SimpleForm4 from "../SimpleForm4";
-import SimpleForm5 from "../SimpleForm5";
-import SimpleForm5b from "../SimpleForm5b";
-import SimpleForm5c from "../SimpleForm5c";
+// import SimpleForm5 from "../SimpleForm5";
+// import SimpleForm5b from "../SimpleForm5b";
+// import SimpleForm5c from "../SimpleForm5c";
 import SimpleForm6a from "../SimpleForm6a";
+import SimpleForm7 from "../SimpleForm7";
 import TransitionExample from "../TransitionExample";
 import TransitionContentExample from "../TransitionContentExample";
 import "../globals";
@@ -134,6 +136,25 @@ const AllComponents = ({ scale = 1, elementStateClass }) => (
       <Button className={elementStateClass}>Two</Button>
       <Button>Three</Button>
     </ButtonGroupV>
+    <LabeledCheckboxOrRadio
+      type="checkbox"
+      label="One"
+      className={elementStateClass}
+    />
+    <br />
+    <LabeledCheckboxOrRadio
+      type="radio"
+      name="dos"
+      label="Two"
+      className={elementStateClass}
+    />
+    <br />
+    <LabeledCheckboxOrRadio
+      type="radio"
+      name="dos"
+      label="Three"
+      className={elementStateClass}
+    />
     <br />
     <div>
       <Label>Text Area</Label>
@@ -162,9 +183,9 @@ const Box = ({ width, children, style, ...rest }) => (
   </h2>
 );
 
-storiesOf("Animations", module)
-  .add("TransitionExample", () => <TransitionExample />)
-  .add("TransitionContentExample", () => <TransitionContentExample />);
+// storiesOf("Animations", module)
+//   .add("TransitionExample", () => <TransitionExample />)
+//   .add("TransitionContentExample", () => <TransitionContentExample />);
 
 storiesOf("All Components", module)
   .addDecorator(Padded)
@@ -185,47 +206,70 @@ storiesOf("All Components", module)
   ));
 
 storiesOf("Forms", module)
-  .addDecorator(story => (
-    <Fill>
-      <PageCard>{story()}</PageCard>
-    </Fill>
-  ))
+  .addDecorator(story => <PageCard>{story()}</PageCard>)
   .add("Form", () => <Form />)
   .add("Simple Form 1", () => <SimpleForm1 />)
   .add("Simple Form 2", () => <SimpleForm2 />)
   .add("SimpleForm3", () => <SimpleForm3 />)
   .add("SimpleForm4", () => <SimpleForm4 />)
-  .add("SimpleForm5", () => <SimpleForm5 />)
-  .add("SimpleForm5b", () => <SimpleForm5b />)
-  .add("SimpleForm5c", () => <SimpleForm5c />)
-  .add("SimpleForm6a", () => <SimpleForm6a />);
+  // .add("SimpleForm5", () => <SimpleForm5 />)
+  // .add("SimpleForm5b", () => <SimpleForm5b />)
+  // .add("SimpleForm5c", () => <SimpleForm5c />)
+  .add("SimpleForm6a", () => <SimpleForm6a />)
+  .add("SimpleForm7", () => <SimpleForm7 />);
 
-storiesOf("Responsive Select", module)
-  .addDecorator(Padded)
-  .add("Responsive Select", () => (
+class ResponsiveSelectExample extends React.Component {
+  state = {
+    value: 1
+  };
+  handleChange = newValue => this.setState({ value: newValue });
+  render = () => (
     <VerticalSpacer space="1em">
-      <ResponsiveSelect value={1} useSelect onChange={() => {}}>
+      <ResponsiveSelect
+        value={this.state.value}
+        useSelect
+        onChange={this.handleChange}
+      >
         <ResponsiveOption value={1}>OneOneOne</ResponsiveOption>
         <ResponsiveOption value={2}>TwoTwoTwo</ResponsiveOption>
         <ResponsiveOption value={3}>ThreeThreeThree</ResponsiveOption>
       </ResponsiveSelect>
-      <ResponsiveSelect value={2} useSelect onChange={() => {}}>
+      <ResponsiveSelect value={this.state.value} onChange={this.handleChange}>
         <ResponsiveOption value={1}>OneOneOne</ResponsiveOption>
         <ResponsiveOption value={2}>TwoTwoTwo</ResponsiveOption>
         <ResponsiveOption value={3}>ThreeThreeThree</ResponsiveOption>
       </ResponsiveSelect>
-      <ResponsiveSelect value={1} onChange={() => {}}>
+      <ResponsiveSelect
+        value={this.state.value}
+        useRadio
+        onChange={this.handleChange}
+      >
         <ResponsiveOption value={1}>OneOneOne</ResponsiveOption>
         <ResponsiveOption value={2}>TwoTwoTwo</ResponsiveOption>
         <ResponsiveOption value={3}>ThreeThreeThree</ResponsiveOption>
       </ResponsiveSelect>
-      <ResponsiveSelect value={3} onChange={() => {}}>
+      <h1>Others</h1>
+      <ResponsiveSelect
+        value={this.state.value}
+        useSelect
+        onChange={this.handleChange}
+      >
+        <ResponsiveOption value={1}>OneOneOne</ResponsiveOption>
+        <ResponsiveOption value={2}>TwoTwoTwo</ResponsiveOption>
+        <ResponsiveOption value={3}>ThreeThreeThree</ResponsiveOption>
+      </ResponsiveSelect>
+      <ResponsiveSelect value={this.state.value} onChange={this.handleChange}>
         <ResponsiveOption value={1}>OneOneOne</ResponsiveOption>
         <ResponsiveOption value={2}>TwoTwoTwo</ResponsiveOption>
         <ResponsiveOption value={3}>ThreeThreeThree</ResponsiveOption>
       </ResponsiveSelect>
     </VerticalSpacer>
-  ));
+  );
+}
+
+storiesOf("Responsive Select", module)
+  .addDecorator(Padded)
+  .add("Responsive Select", () => <ResponsiveSelectExample />);
 
 storiesOf("Text Layout", module)
   .addDecorator(Padded)

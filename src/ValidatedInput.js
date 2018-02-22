@@ -3,36 +3,48 @@ import {
   Input,
   AdvancedInput,
   Label,
+  LabeledCheckboxOrRadio,
   InputMessage,
   Loading
 } from "./FormComponents";
 
+function isCheckboxOrRadioType(type) {
+  return type === "checkbox" || type === "radio";
+}
+
+// TODO: add unique id for labels
 const ValidatedInput = ({
   label,
+  type,
   errorMessage,
+  validationMessage,
   shouldShake,
   isValid,
+  isValidating,
   placeholder,
   helper,
-  ...props
+  ...rest
 }) => {
-  const finalErrorMessage = helper ? helper.validationMessage : errorMessage;
-  const finalProps = helper ? helper.getProps({ ...props }) : props;
-  // const shouldShakeFinal =
-  //   helper && helper.shouldShake ? helper.shouldShake : shouldShake;
-  const shouldShakeClass = shouldShake ? "shake" : null;
+  validationMessage = validationMessage ? validationMessage : errorMessage;
   return (
-    <div className={shouldShakeClass}>
-      {!placeholder && <Label>{label}</Label>}
-      <AdvancedInput
-        status={finalErrorMessage && "error"}
-        placeholder={placeholder}
-        isValid={isValid}
-        {...finalProps}
-      />
-      {finalErrorMessage && (
-        <InputMessage status="error">{finalErrorMessage}</InputMessage>
+    <div className={shouldShake ? "shake" : null}>
+      {!placeholder && !isCheckboxOrRadioType(type) && <Label>{label}</Label>}
+      {!isCheckboxOrRadioType(type) && (
+        <AdvancedInput
+          status={validationMessage && "error"}
+          placeholder={placeholder}
+          isValid={isValid && !validationMessage}
+          isValidating={isValidating}
+          {...rest}
+        />
       )}
+      {isCheckboxOrRadioType(type) && (
+        <LabeledCheckboxOrRadio type={type} label={label} {...rest} />
+      )}
+      {validationMessage &&
+        !isValidating && (
+          <InputMessage status="error">{validationMessage}</InputMessage>
+        )}
     </div>
   );
 };

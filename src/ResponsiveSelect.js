@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 import { first, last } from "lodash";
 import { throttleEvent } from "./globals";
-import { Select, Button, ButtonGroupH, ButtonGroupV } from "./FormComponents";
+import {
+  Select,
+  Button,
+  ButtonGroupH,
+  ButtonGroupV,
+  LabeledCheckboxOrRadio
+} from "./FormComponents";
 
 const hiddenStyles = {
   opacity: 0,
@@ -42,25 +48,42 @@ export default class ResponsiveSelect extends Component {
   }
 
   render() {
-    const { useSelect, children, value, onChange } = this.props;
+    const { useSelect, useRadio, children, value, onChange } = this.props;
     const { goVertical } = this.state;
     return (
       <div>
         {goVertical &&
           useSelect && (
-            <Select value={value} onChange={onChange}>
+            <Select value={value} onChange={e => onChange(e.target.value)}>
               {React.Children.map(children, child => (
                 <option {...child.props} />
               ))}
             </Select>
           )}
         {goVertical &&
-          !useSelect && (
+          useRadio && (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {React.Children.map(children, child => (
+                <LabeledCheckboxOrRadio
+                  type="radio"
+                  label={child.props.children}
+                  checked={child.props.value.toString() === value}
+                  onChange={e =>
+                    e.target.checked && onChange(child.props.value.toString())
+                  }
+                />
+              ))}
+            </div>
+          )}
+        {goVertical &&
+          !useSelect &&
+          !useRadio && (
             <ButtonGroupV>
               {React.Children.map(children, child => (
                 <Button
                   {...child.props}
-                  selected={child.props.value === value}
+                  onClick={() => onChange(child.props.value.toString())}
+                  selected={child.props.value.toString() === value}
                 />
               ))}
             </ButtonGroupV>
@@ -72,7 +95,11 @@ export default class ResponsiveSelect extends Component {
           style={goVertical ? hiddenStyles : {}}
         >
           {React.Children.map(children, child => (
-            <Button {...child.props} selected={child.props.value === value} />
+            <Button
+              {...child.props}
+              onClick={() => onChange(child.props.value.toString())}
+              selected={child.props.value.toString() === value}
+            />
           ))}
         </ButtonGroupH>
       </div>

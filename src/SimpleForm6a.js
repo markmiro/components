@@ -24,8 +24,6 @@ const isEmailUniqueDebounced = debounce(isEmailUnique, 500);
 
 class SimpleForm extends React.Component {
   state = {
-    username: "",
-    acceptTerms: false,
     email: "",
     isCheckingIfEmailUnique: false,
     isEmailUniqueMessage: ""
@@ -47,9 +45,7 @@ class SimpleForm extends React.Component {
           didAccept ? "" : "Please accept to the terms to continue"
       })}
       controlledValues={{
-        username: this.state.username,
-        email: this.state.email,
-        acceptTerms: this.state.acceptTerms
+        email: this.state.email
       }}
       onSubmit={(fields, messages, isValid) =>
         isValid && alert(JSON.stringify(fields, null, "  "))
@@ -60,38 +56,31 @@ class SimpleForm extends React.Component {
       ) => (
         <VerticalSpacer space="1em">
           <h1>Create Account</h1>
-          {username.watchFull(
-            <ValidatedInput
-              label="Username"
-              onChange={e => this.setState({ username: e.target.value })}
-              errorMessage={username.validationMessage}
-            />
-          )}
+          {username.watchFull(<ValidatedInput label="Username" />)}
           {email.watchFull(
             <ValidatedInput
               label="Email"
               errorMessage={
                 email.validationMessage || this.state.isEmailUniqueMessage
               }
+              isValidating={this.state.isCheckingIfEmailUnique}
               onChange={e => {
                 const email = e.target.value;
-                this.setState({ email });
+                this.setState({ email, isCheckingIfEmailUnique: true });
                 isEmailUniqueDebounced(email, message => {
-                  this.setState({ isEmailUniqueMessage: message });
+                  this.setState({
+                    isEmailUniqueMessage: message,
+                    isCheckingIfEmailUnique: false
+                  });
                 });
               }}
             />
           )}
-          {confirmEmail.watchFull(
-            <ValidatedInput
-              label="Confirm Email"
-              errorMessage={confirmEmail.validationMessage}
-            />
-          )}
+          {confirmEmail.watchFull(<ValidatedInput label="Confirm Email" />)}
           {password.watchFull(
             <ValidatedInput
               label="Password"
-              errorMessage={
+              validationMessage={
                 password.validationMessage &&
                 password.validationMessage
                   .filter(message => !!message)
@@ -99,29 +88,13 @@ class SimpleForm extends React.Component {
               }
             />
           )}
-          <div className={acceptTerms.shouldShake ? "shake" : ""}>
-            <Label style={{ marginBottom: 0 }}>
-              <input
-                type="checkbox"
-                checked={this.state.acceptTerms}
-                onChange={e => {
-                  acceptTerms.validateValue(e.target.checked);
-                  this.setState({
-                    acceptTerms: e.target.checked
-                  });
-                }}
-                ref={acceptTerms.ref}
-              />
-              <span style={{ marginLeft: ".5em" }}>
-                I accept the terms and conditions
-              </span>
-            </Label>
-            {acceptTerms.validationMessage && (
-              <InputMessage status="error">
-                {acceptTerms.validationMessage}
-              </InputMessage>
-            )}
-          </div>
+          {acceptTerms.watchFull(
+            <ValidatedInput
+              label="I accept the terms and conditions"
+              type="checkbox"
+              innerRef={acceptTerms.ref}
+            />
+          )}
 
           <ButtonSuperPrimary type="submit">Submit</ButtonSuperPrimary>
           <ButtonGroupH>
@@ -129,9 +102,8 @@ class SimpleForm extends React.Component {
               type="button"
               onClick={() => {
                 this.setState({
-                  username: "",
                   email: "",
-                  acceptTerms: false
+                  isEmailUniqueMessage: ""
                 });
                 reset();
               }}
@@ -142,9 +114,7 @@ class SimpleForm extends React.Component {
               type="button"
               onClick={() =>
                 this.setState({
-                  username: "markmiro",
-                  email: "something@something.com",
-                  acceptTerms: true
+                  email: "something@something.com"
                 })
               }
             >

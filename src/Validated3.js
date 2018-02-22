@@ -29,6 +29,8 @@ const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
 /*
 TODO:
+- Don't validate if blur caused by switching windows
+- Verify that it works with radio buttons
 - Assert that keys between props: controlledValues and validations match
 - Fix debounced validations being impossible
 - Support being controlled or uncontrolled (for field values and messages)
@@ -117,7 +119,9 @@ export default class Validated extends Component {
     );
   };
   _helpersForKey = key => {
-    const isControlled = () => this.props.controlledValues[key] !== undefined;
+    const isControlled = () =>
+      this.props.controlledValues &&
+      this.props.controlledValues[key] !== undefined;
     const getValue = () => this.fields()[key];
     const setMessage = message =>
       this.setState(
@@ -173,7 +177,10 @@ export default class Validated extends Component {
       if (isControlled()) {
         doIt();
       } else {
-        this.setState({ [key]: e.target.value }, doIt);
+        // Ignore "radio" case
+        const value =
+          e.target.type === "checkbox" ? e.target.checked : e.target.value;
+        this.setState({ [key]: value }, doIt);
       }
     };
 
@@ -186,6 +193,7 @@ export default class Validated extends Component {
     const getProps = ({ onChange, onBlur, ...rest } = {}) => ({
       name: key,
       value: getValue(), // You can extract state, but you can't set it
+      checked: getValue(),
       onChange: compose(validateIfValidated, onChange),
       onBlur: compose(validateIfNonEmpty, onBlur),
       innerRef: setRef,
@@ -200,6 +208,7 @@ export default class Validated extends Component {
 
     return {
       value: getValue(),
+      checked: getValue(),
       validateField,
       validateValue: value => this.setState({ [key]: value }, validateField),
       validateIfValidated,
