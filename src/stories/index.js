@@ -5,169 +5,23 @@ import { action } from "@storybook/addon-actions";
 import { linkTo } from "@storybook/addon-links";
 
 import { Welcome } from "@storybook/react/demo";
-import {
-  Input,
-  Label,
-  Select,
-  Button,
-  ButtonPrimary,
-  ButtonSuperPrimary,
-  InputMessage,
-  VerticalSpacer,
-  HSpacer,
-  FinePrint,
-  Loading,
-  Fill,
-  PageCard,
-  TextArea,
-  Text,
-  ButtonGroupV,
-  ButtonGroupH,
-  LabeledCheckboxOrRadio
-} from "../FormComponents";
-import ResponsiveSelect, { ResponsiveOption } from "../ResponsiveSelect";
-import ResizerParent from "../ResizerParent";
+
+import { VerticalSpacer, HSpacer, Label, FinePrint } from "../FormComponents";
 import CharacterWidthCalculator from "../CharacterWidthCalculator";
 import "../index.css";
 import Resume from "../Resume";
-import Form from "../Form";
-import SimpleForm1 from "../SimpleForm1";
-import SimpleForm2 from "../SimpleForm2";
-import SimpleForm3 from "../SimpleForm3";
-import SimpleForm4 from "../SimpleForm4";
-// import SimpleForm5 from "../SimpleForm5";
-// import SimpleForm5b from "../SimpleForm5b";
-// import SimpleForm5c from "../SimpleForm5c";
-import SimpleForm6a from "../SimpleForm6a";
-import SimpleForm7 from "../SimpleForm7";
-import TransitionExample from "../TransitionExample";
-import TransitionContentExample from "../TransitionContentExample";
+// import TransitionExample from "../TransitionExample";
+// import TransitionContentExample from "../TransitionContentExample";
 import "../globals";
 
-const Padded = story => <div style={{ padding: "2rem" }}>{story()}</div>;
+import { Padded } from "./decorators";
+import "./forms";
+import "./elements";
+import "./components";
 
 storiesOf("Welcome", module).add("to Storybook", () => (
   <Welcome showApp={linkTo("Button")} />
 ));
-
-const LOREM_TEXT = "The quick brown fox jumped over the lazy dog. ".repeat(3);
-
-const AllComponents = ({ scale = 1, elementStateClass }) => (
-  <VerticalSpacer
-    space=".5em"
-    style={{ fontSize: `${scale * 100}%`, flexGrow: scale * 10 }}
-  >
-    <VerticalSpacer space="1em">
-      <label>{(scale || "1") + "x scale"}</label>
-      <br />
-      <label>{(elementStateClass || "normal") + " state"}</label>
-      <hr />
-      <div>
-        <Label className={elementStateClass}>First Name</Label>
-        <Input className={elementStateClass} value={LOREM_TEXT} />
-        <InputMessage className={elementStateClass}>
-          This is something
-        </InputMessage>
-      </div>
-      <div>
-        <Label status="error" className={elementStateClass}>
-          First Name
-        </Label>
-        <Input
-          status="error"
-          className={elementStateClass}
-          value={LOREM_TEXT}
-        />
-        <InputMessage status="error" className={elementStateClass}>
-          This is something
-        </InputMessage>
-      </div>
-      <div>
-        <Label status="warning" className={elementStateClass}>
-          First Name
-        </Label>
-        <Input
-          status="warning"
-          className={elementStateClass}
-          value={LOREM_TEXT}
-        />
-        <InputMessage status="warning" className={elementStateClass}>
-          This is something
-        </InputMessage>
-      </div>
-      <div>
-        <Label status="success" className={elementStateClass}>
-          First Name
-        </Label>
-        <Input
-          status="success"
-          className={elementStateClass}
-          value={LOREM_TEXT}
-        />
-        <InputMessage status="success" className={elementStateClass}>
-          This is something
-        </InputMessage>
-      </div>
-    </VerticalSpacer>
-    <br />
-    <Loading />
-    <br />
-    <Button className={elementStateClass}>
-      Register Account <Loading />
-    </Button>
-    <ButtonPrimary className={elementStateClass}>
-      Register Account <Loading />
-    </ButtonPrimary>
-    <ButtonSuperPrimary className={elementStateClass}>
-      Register Account <Loading />
-    </ButtonSuperPrimary>
-    <Select className={elementStateClass}>
-      <option>One</option>
-      <option>Two</option>
-      <option>Three</option>
-    </Select>
-    <ButtonGroupH>
-      <Button>One</Button>
-      <Button className={elementStateClass}>Two</Button>
-      <Button>Three</Button>
-    </ButtonGroupH>
-    <ButtonGroupV>
-      <Button>One</Button>
-      <Button className={elementStateClass}>Two</Button>
-      <Button>Three</Button>
-    </ButtonGroupV>
-    <LabeledCheckboxOrRadio
-      type="checkbox"
-      label="One"
-      className={elementStateClass}
-    />
-    <br />
-    <LabeledCheckboxOrRadio
-      type="radio"
-      name="dos"
-      label="Two"
-      className={elementStateClass}
-    />
-    <br />
-    <LabeledCheckboxOrRadio
-      type="radio"
-      name="dos"
-      label="Three"
-      className={elementStateClass}
-    />
-    <br />
-    <div>
-      <Label>Text Area</Label>
-      <TextArea className={elementStateClass} value={LOREM_TEXT} />
-    </div>
-    <FinePrint>
-      Lorem ipsum dolor sit amet, consectetur <a href="#">adipisicing elit</a>.
-      Totam porro temporibus ullam, explicabo optio corporis sit repellat veniam
-      atque fugiat consequatur nisi tempore, suscipit reprehenderit deserunt
-      ipsum fugit, at aliquid!
-    </FinePrint>
-  </VerticalSpacer>
-);
 
 const Box = ({ width, children, style, ...rest }) => (
   <h2
@@ -186,90 +40,6 @@ const Box = ({ width, children, style, ...rest }) => (
 // storiesOf("Animations", module)
 //   .add("TransitionExample", () => <TransitionExample />)
 //   .add("TransitionContentExample", () => <TransitionContentExample />);
-
-storiesOf("All Components", module)
-  .addDecorator(Padded)
-  .add("Sizes", () => (
-    <HSpacer space="2em">
-      <AllComponents scale={0.75} />
-      <AllComponents scale={1.0} />
-      <AllComponents scale={1.25} />
-    </HSpacer>
-  ))
-  .add("States", () => (
-    <HSpacer space="2em">
-      <AllComponents elementStateClass="disabled" />
-      <AllComponents elementStateClass="" />
-      <AllComponents elementStateClass="hover" />
-      <AllComponents elementStateClass="focus" />
-    </HSpacer>
-  ));
-
-storiesOf("Forms", module)
-  .addDecorator(story => <PageCard>{story()}</PageCard>)
-  .add("Form", () => <Form />)
-  .add("Simple Form 1", () => <SimpleForm1 />)
-  .add("Simple Form 2", () => <SimpleForm2 />)
-  .add("SimpleForm3", () => <SimpleForm3 />)
-  .add("SimpleForm4", () => <SimpleForm4 />)
-  // .add("SimpleForm5", () => <SimpleForm5 />)
-  // .add("SimpleForm5b", () => <SimpleForm5b />)
-  // .add("SimpleForm5c", () => <SimpleForm5c />)
-  .add("SimpleForm6a", () => <SimpleForm6a />)
-  .add("SimpleForm7", () => <SimpleForm7 />);
-
-class ResponsiveSelectExample extends React.Component {
-  state = {
-    value: 1
-  };
-  handleChange = newValue => this.setState({ value: newValue });
-  render = () => (
-    <VerticalSpacer space="1em">
-      <ResponsiveSelect
-        value={this.state.value}
-        useSelect
-        onChange={this.handleChange}
-      >
-        <ResponsiveOption value={1}>OneOneOne</ResponsiveOption>
-        <ResponsiveOption value={2}>TwoTwoTwo</ResponsiveOption>
-        <ResponsiveOption value={3}>ThreeThreeThree</ResponsiveOption>
-      </ResponsiveSelect>
-      <ResponsiveSelect value={this.state.value} onChange={this.handleChange}>
-        <ResponsiveOption value={1}>OneOneOne</ResponsiveOption>
-        <ResponsiveOption value={2}>TwoTwoTwo</ResponsiveOption>
-        <ResponsiveOption value={3}>ThreeThreeThree</ResponsiveOption>
-      </ResponsiveSelect>
-      <ResponsiveSelect
-        value={this.state.value}
-        useRadio
-        onChange={this.handleChange}
-      >
-        <ResponsiveOption value={1}>OneOneOne</ResponsiveOption>
-        <ResponsiveOption value={2}>TwoTwoTwo</ResponsiveOption>
-        <ResponsiveOption value={3}>ThreeThreeThree</ResponsiveOption>
-      </ResponsiveSelect>
-      <h1>Others</h1>
-      <ResponsiveSelect
-        value={this.state.value}
-        useSelect
-        onChange={this.handleChange}
-      >
-        <ResponsiveOption value={1}>OneOneOne</ResponsiveOption>
-        <ResponsiveOption value={2}>TwoTwoTwo</ResponsiveOption>
-        <ResponsiveOption value={3}>ThreeThreeThree</ResponsiveOption>
-      </ResponsiveSelect>
-      <ResponsiveSelect value={this.state.value} onChange={this.handleChange}>
-        <ResponsiveOption value={1}>OneOneOne</ResponsiveOption>
-        <ResponsiveOption value={2}>TwoTwoTwo</ResponsiveOption>
-        <ResponsiveOption value={3}>ThreeThreeThree</ResponsiveOption>
-      </ResponsiveSelect>
-    </VerticalSpacer>
-  );
-}
-
-storiesOf("Responsive Select", module)
-  .addDecorator(Padded)
-  .add("Responsive Select", () => <ResponsiveSelectExample />);
 
 storiesOf("Text Layout", module)
   .addDecorator(Padded)
