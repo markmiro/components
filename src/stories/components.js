@@ -3,6 +3,7 @@ import { storiesOf } from "@storybook/react";
 import { Padded } from "./decorators";
 import { VerticalSpacer } from "../FormComponents";
 import ResponsiveSelect, { ResponsiveOption } from "../ResponsiveSelect";
+import CodeEditor from "../CodeEditor";
 
 class ResponsiveSelectExample extends React.Component {
   state = {
@@ -56,3 +57,5 @@ class ResponsiveSelectExample extends React.Component {
 storiesOf("Components", module)
   .addDecorator(Padded)
   .add("ResponsiveSelect", () => <ResponsiveSelectExample />);
+
+storiesOf("CodeEditor", module).add("CodeEditor", () => <CodeEditor />);

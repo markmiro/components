@@ -13,11 +13,13 @@ select,
 button {
   color: #333;
 }
+body {
+  font-family: system-ui, Roboto, Helvetica, sans-serif;
+}
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: system-ui, Roboto, Helvetica, sans-serif;
   /* transition-property: opacity, border-color, box-shadow, background-color;
   transition-timing-function: ease-in-out;
   transition-duration: 80ms;*/
