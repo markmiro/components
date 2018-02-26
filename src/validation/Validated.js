@@ -18,7 +18,7 @@ import {
   validate,
   validateAll
 } from "./validationRunner";
-import { trace } from "./globals";
+import { trace } from "../globals";
 
 const EMPTY_VALUE = "";
 const NO_ERROR = "";
@@ -83,7 +83,7 @@ export default class Validated extends Component {
     const empty = mapValidations(this.props.validations, () => EMPTY_VALUE);
     return {
       ...empty,
-      // Since state keys are defined by consumer, we need a name that can't conflict
+      ...this.props.initialValues, // Since state keys are defined by consumer, we need a name that can't conflict
       _messages: mapValidations(this.props.validations, () => NO_VALIDATION),
       _shouldShake: mapValidations(this.props.validations, () => ""),
       _keyFocused: null
@@ -94,28 +94,32 @@ export default class Validated extends Component {
     ...omit(this.state, ["_messages", "_shouldShake", "_keyFocused"]),
     ...this.props.controlledValues
   });
-  _validateAll = onValidate => {
+  _setValidationMessages = (messages, onSetStateDone = () => {}) => {
     // TODO: if there are already some messages then just highlight the first field with a message
     this.setState({
       _keyFocused: null,
       _shouldShake: mapValidations(this.props.validations, () => false)
     });
-    const messages = validateAll(this.props.validations, this.fields());
     const keyToFocus = findKey(messages, message => !!message);
     this._refs[keyToFocus] && this._refs[keyToFocus].focus();
     this.setState(
       {
-        _messages: messages,
-        // Shake the first one with an error
+        _messages: messages, // Shake the first one with an error
         _shouldShake: mapValidations(
           this.props.validations,
           key => key === keyToFocus
         ),
         _keyFocused: keyToFocus
       },
-      () => {
-        onValidate(this.fields(), messages, areAllValid(messages));
-      }
+      onSetStateDone
+    );
+  };
+  _areAllValid = () =>
+    areAllValid(validateAll(this.props.validations, this.fields()));
+  _validateAll = onValidate => {
+    const messages = validateAll(this.props.validations, this.fields());
+    this._setValidationMessages(messages, () =>
+      onValidate(this.fields(), messages, areAllValid(messages))
     );
   };
   _helpersForKey = key => {
@@ -126,10 +130,7 @@ export default class Validated extends Component {
     const setMessage = message =>
       this.setState(
         state => ({
-          _messages: {
-            ...state._messages,
-            [key]: message
-          },
+          _messages: { ...state._messages, [key]: message },
           _shouldShake: {
             ...state._shouldShake,
             [key]: !!message && !state._messages[key]
@@ -203,13 +204,13 @@ export default class Validated extends Component {
 
     const getProps = ({ onChange, onBlur, ...rest } = {}) => ({
       name: key,
-      value: getValue(), // You can extract state, but you can't set it
+      value: getValue(),
       checked: getValue(),
       onChange: compose(validateIfValidated, onChange),
       onBlur: compose(validateIfNonEmpty, onBlur),
       innerRef: setRef,
       ...rest
-    });
+    }); // You can extract state, but you can't set it
 
     const customProps = {
       validationMessage: this.state._messages[key],
@@ -237,6 +238,8 @@ export default class Validated extends Component {
       this._helpersForKey(key)
     );
     const generalHelpers = {
+      setValidationMessages: this._setValidationMessages,
+      areAllValid: this._areAllValid,
       validateAll: this._validateAll,
       reset: this._reset
     };

@@ -1,9 +1,6 @@
 import React from "react";
-import { ValidatedForm } from "./Validated3";
-import validations from "./validations2";
 import validator from "validator";
 import { debounce } from "lodash";
-import ValidatedInput from "./ValidatedInput";
 import {
   Button,
   ButtonGroupH,
@@ -11,8 +8,11 @@ import {
   Label,
   VerticalSpacer,
   InputMessage
-} from "./FormComponents";
-import { trace } from "./globals";
+} from "../../FormComponents";
+import { trace } from "../../globals";
+import { ValidatedForm } from "../Validated";
+import validations from "../validations2";
+import ValidatedInput from "../ValidatedInput";
 
 const isEmailUnique = (email, cb) =>
   setTimeout(
@@ -22,7 +22,7 @@ const isEmailUnique = (email, cb) =>
 
 const isEmailUniqueDebounced = debounce(isEmailUnique, 500);
 
-class SimpleForm extends React.Component {
+class RegisterForm extends React.Component {
   state = {
     email: "",
     isCheckingIfEmailUnique: false,
@@ -127,4 +127,4 @@ class SimpleForm extends React.Component {
   );
 }
 
-export default SimpleForm;
+export default RegisterForm;

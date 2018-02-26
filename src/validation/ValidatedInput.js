@@ -6,7 +6,7 @@ import {
   LabeledCheckboxOrRadio,
   InputMessage,
   Loading
-} from "./FormComponents";
+} from "../FormComponents";
 
 function isCheckboxOrRadioType(type) {
   return type === "checkbox" || type === "radio";

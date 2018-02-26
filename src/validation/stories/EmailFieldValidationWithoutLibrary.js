@@ -7,7 +7,7 @@ import {
   ButtonPrimary,
   InputMessage,
   VerticalSpacer
-} from "./FormComponents";
+} from "../../FormComponents";
 
 // * Link errors with messages
 // * Show message at one of these times
@@ -37,13 +37,10 @@ const NO_ERRORS = {
   email: ""
 };
 
-export default class SimpleForm extends Component {
+export default class EmailFieldValidationWithoutLibrary extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      email: "",
-      errors: NO_ERRORS
-    };
+    this.state = { email: "", errors: NO_ERRORS };
   }
 
   render() {

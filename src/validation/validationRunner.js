@@ -13,7 +13,7 @@ import {
   isEqual
 } from "lodash";
 import pLocate from "p-locate";
-import { trace } from "./globals";
+import { trace } from "../globals";
 
 /*
 TODO: consider allowing consumer to optionally define this.

@@ -1,9 +1,9 @@
 import React from "react";
-import { ValidatedForm } from "./Validated3";
-import ResponsiveSelect, { ResponsiveOption } from "./ResponsiveSelect";
-import { InputMessage } from "./FormComponents";
+import ResponsiveSelect, { ResponsiveOption } from "../../ResponsiveSelect";
+import { InputMessage } from "../../FormComponents";
+import { ValidatedForm } from "../Validated";
 
-class SimpleForm7 extends React.Component {
+class RadioOptions extends React.Component {
   render = () => (
     <div>
       <ValidatedForm
@@ -31,4 +31,4 @@ class SimpleForm7 extends React.Component {
   );
 }
 
-export default SimpleForm7;
+export default RadioOptions;

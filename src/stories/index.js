@@ -12,7 +12,7 @@ import Resume from "../Resume";
 // import TransitionContentExample from "../TransitionContentExample";
 
 import "../globals";
-import "./forms";
+import "../validation/stories/validation-stories";
 import "./elements";
 import "./components";
 import "./random";
