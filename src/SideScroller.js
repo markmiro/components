@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { easePolyOut } from "d3-ease";
 
+// TODO: allow clicking arrows quickly
+
 const Container = styled.div`
   position: relative;
 `;
@@ -111,10 +113,14 @@ class SideScroller extends Component {
     // console.log(this.windowEl, this.windowEl.scrollLeft);
     const widths = this.getWidths();
     const targetItem = widths.find(
-      ({ scrollLeft }) => scrollLeft > this.windowEl.scrollLeft
+      ({ scrollLeft, width }) =>
+        scrollLeft + width >
+        this.windowEl.scrollLeft + this.windowEl.offsetWidth
     );
     this.scrollTo(
-      targetItem ? targetItem.scrollLeft : this.getMaxScrollPosition()
+      targetItem
+        ? targetItem.scrollLeft + targetItem.width - this.windowEl.offsetWidth
+        : this.getMaxScrollPosition()
     );
   };
   isAtBeginning = () => {
@@ -140,9 +146,10 @@ class SideScroller extends Component {
             <SideScrollerItem>Item 2</SideScrollerItem>
             <SideScrollerItem width={300}>Item 3</SideScrollerItem>
             <SideScrollerItem>Item 4</SideScrollerItem>
-            <SideScrollerItem>Item 5</SideScrollerItem>
-            <SideScrollerItem>Item 6</SideScrollerItem>
-            <SideScrollerItem>Item 7</SideScrollerItem>
+            <SideScrollerItem width="120%">Item 5</SideScrollerItem>
+            <SideScrollerItem width="33.33%">Item 6</SideScrollerItem>
+            <SideScrollerItem width="33.33%">Item 7</SideScrollerItem>
+            <SideScrollerItem width="33.33%">Item 8</SideScrollerItem>
           </Window>
         </ScrollBarHider>
         {!this.isAtBeginning() && <Arrow type="left" onClick={this.goLeft} />}
