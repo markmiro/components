@@ -4,6 +4,7 @@ import { Padded } from "./decorators";
 import { VerticalSpacer } from "../FormComponents";
 import ResponsiveSelect, { ResponsiveOption } from "../ResponsiveSelect";
 import CodeEditor from "../CodeEditor";
+import SideScroller from "../SideScroller";
 
 class ResponsiveSelectExample extends React.Component {
   state = {
@@ -59,3 +60,19 @@ storiesOf("Components", module)
   .add("ResponsiveSelect", () => <ResponsiveSelectExample />);
 
 storiesOf("CodeEditor", module).add("CodeEditor", () => <CodeEditor />);
+
+storiesOf("SideScroller", module)
+  .addDecorator(Padded)
+  .add("SideScroller", () => (
+    <div>
+      <SideScroller />
+      <div>
+        Dolore irure Lorem magna ut anim et labore. Minim eiusmod ex voluptate
+        enim pariatur consectetur. Dolore proident cillum laborum excepteur
+        velit adipisicing reprehenderit do quis laborum id adipisicing labore
+        exercitation. Adipisicing aute et ipsum mollit nulla. Consequat aute
+        magna eiusmod adipisicing id dolore tempor nulla est in minim. Nulla
+        aute velit nulla eu duis eiusmod nulla minim.
+      </div>
+    </div>
+  ));
