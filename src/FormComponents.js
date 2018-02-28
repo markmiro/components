@@ -311,6 +311,10 @@ export const PageCard = styled.div`
   margin-right: auto;
 `;
 
+export const Padded = styled.div`
+  padding: 2em;
+`;
+
 export const Text = ({ children }) => {
   if (typeof children !== "string") return children;
   const wordArr = children.split(" ");

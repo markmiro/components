@@ -1,10 +1,11 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
-import { Padded } from "./decorators";
-import { VerticalSpacer } from "../FormComponents";
+import { VerticalSpacer, Padded } from "../FormComponents";
 import ResponsiveSelect, { ResponsiveOption } from "../ResponsiveSelect";
 import CodeEditor from "../CodeEditor";
 import SideScroller from "../SideScroller";
+import { Tree } from "../Tree";
+import Counter from "../Counter";
 
 class ResponsiveSelectExample extends React.Component {
   state = {
@@ -56,15 +57,14 @@ class ResponsiveSelectExample extends React.Component {
 }
 
 storiesOf("Components", module)
-  .addDecorator(Padded)
-  .add("ResponsiveSelect", () => <ResponsiveSelectExample />);
-
-storiesOf("CodeEditor", module).add("CodeEditor", () => <CodeEditor />);
-
-storiesOf("SideScroller", module)
-  .addDecorator(Padded)
+  .add("ResponsiveSelect", () => (
+    <Padded>
+      <ResponsiveSelectExample />
+    </Padded>
+  ))
+  .add("CodeEditor", () => <CodeEditor />)
   .add("SideScroller", () => (
-    <div>
+    <Padded>
       <SideScroller />
       <div>
         Dolore irure Lorem magna ut anim et labore. Minim eiusmod ex voluptate
@@ -74,5 +74,5 @@ storiesOf("SideScroller", module)
         magna eiusmod adipisicing id dolore tempor nulla est in minim. Nulla
         aute velit nulla eu duis eiusmod nulla minim.
       </div>
-    </div>
+    </Padded>
   ));
