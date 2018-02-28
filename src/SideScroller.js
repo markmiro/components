@@ -2,6 +2,20 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { easePolyOut } from "d3-ease";
 
+/*
+Goals:
+Should be useful for any content that overflows to the right.
+Normally, we'd wrap, but that's not always the right solution.
+Also, some content is best designed to overscroll sideways anyway.
+
+Traditionally, these kinds of components were considered carousels
+or sliders. However, the intent of this component is not to create
+annoying auto-transitioning carousels.
+
+It may be useful to create an additional component that acts like a
+carousel and has the dots at the bottom.
+*/
+
 // TODO: allow clicking arrows quickly
 
 const Container = styled.div`
