@@ -5,7 +5,6 @@ import { Fill, PageCardCenter, Button, ButtonGroupH } from "./FormComponents";
 
 const reducer = (state = 0, action) => {
   console.log(state, action);
-  debugger;
   switch (action.type) {
     case "INCREMENT":
       debugger;
