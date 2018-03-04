@@ -62,6 +62,11 @@ storiesOf("Components", module)
       <ResponsiveSelectExample />
     </Padded>
   ))
+  .add("Tree", () => (
+    <Padded>
+      <Tree />
+    </Padded>
+  ))
   .add("Counter", () => <Counter />)
   .add("CodeEditor", () => <CodeEditor />)
   .add("SideScroller", () => (
