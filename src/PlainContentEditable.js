@@ -26,14 +26,10 @@ function toEditorEvent(event) {
 
   const comboString = getKeyComboString(event);
 
-  const shouldSanitizeKeyCombo = () =>
-    ["Cmd+v", "Cmd+Shift+v"].includes(comboString);
-
   const isBlockedKeyCombo = () => ["Cmd+b", "Cmd+i"].includes(comboString);
 
   return {
     comboString,
-    shouldSanitizeKeyCombo,
     isBlockedKeyCombo
   };
 }
