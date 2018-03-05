@@ -81,17 +81,12 @@ const Dot = styled.span`
 export class Node extends Component {
   constructor(props) {
     super(props);
-    this.state = { downKeys: [], isExpanded: false, value: this.props.value };
+    this.state = { downKeys: [], isExpanded: false, text: this.props.text };
   }
   toggleExpanded = () =>
     this.setState(state => ({
       isExpanded: !state.isExpanded
     }));
-  sanitize = () => {
-    console.log(this.inputEl.textContent);
-    this.inputEl.innerHTML = this.inputEl.textContent;
-    // this.inputEl.
-  };
   render() {
     const hasChildren = React.Children.count(this.props.children) > 0;
     return (
@@ -102,8 +97,8 @@ export class Node extends Component {
         <Dot />
         <div style={{ width: "100%" }}>
           <PlainContentEditable
-            initialValue={this.props.value}
-            onChange={text => console.log("onChange", text)}
+            value={this.state.text}
+            onChange={text => this.setState({ text })}
           />
           {this.state.isExpanded && this.props.children}
         </div>
@@ -118,7 +113,7 @@ export class Tree extends Component {
   }
   render() {
     const componentFromNode = node => (
-      <Node key={node.id} value={node.body}>
+      <Node key={node.id} text={node.body}>
         {node.children && node.children.map(componentFromNode)}
       </Node>
     );
