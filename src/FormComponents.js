@@ -34,6 +34,7 @@ const INPUT_PADDING_H = "0.9em";
 const FormControlBase = styled.input`
   padding: 0.6em ${INPUT_PADDING_H};
   font-size: inherit;
+  font-size: ${({ size = "m" }) => (size === "s" ? "0.5em" : undefined)};
   border-width: 1px;
   border-style: solid;
   border-color: ${statusColor("#ccc")};

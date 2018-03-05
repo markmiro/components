@@ -90,3 +90,7 @@ a {
 .shake {
   animation: shake 500ms;
 }
+
+.no-focus-box:focus {
+  box-shadow: none !important;
+}

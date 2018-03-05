@@ -1,25 +1,18 @@
 import React, { Component } from "react";
-import styled from "styled-components";
 
-const ContentEditable = styled.div`
-  &:focus {
-    box-shadow: none !important;
-  }
-`;
+// https://css-tricks.com/snippets/javascript/test-mac-pc-javascript/
+const isCmdKeyDown = e => {
+  const isMac = () => navigator.userAgent.indexOf("Mac OS X") > -1;
+  return isMac() ? e.metaKey : e.ctrlKey;
+};
 
 function toEditorEvent(event) {
-  // https://css-tricks.com/snippets/javascript/test-mac-pc-javascript/
-  const isCmdKey = e => {
-    const isMac = () => navigator.userAgent.indexOf("Mac OS X") > -1;
-    return isMac() ? e.metaKey : e.ctrlKey;
-  };
-
   const isModifierKey = key =>
     ["Shift", "Meta", "Alt", "Control"].includes(key);
 
   const getKeyComboString = e => {
     let keyCombo = [];
-    if (isCmdKey(e)) keyCombo.push("Cmd");
+    if (isCmdKeyDown(e)) keyCombo.push("Cmd");
     if (e.shiftKey) keyCombo.push("Shift");
     if (e.altKey) keyCombo.push("Alt");
     if (!isModifierKey(e.key)) keyCombo.push(e.key);
@@ -38,7 +31,6 @@ function toEditorEvent(event) {
 // is standardized and widely supported.
 // https://w3c.github.io/editing/contentEditable.html
 export default class PlainContentEditable extends Component {
-  cursorRange = {};
   componentDidMount = () => {
     this.observer = new MutationObserver(mutations => {
       mutations
@@ -48,16 +40,16 @@ export default class PlainContentEditable extends Component {
           this.props.onChange(mutation.target.data);
         });
     });
-    const config = { characterData: true };
-    this.observer.observe(this.textNode, config);
+    const config = { characterData: true, subtree: true };
+    this.observer.observe(this.el, config);
   };
-  componentWillUnmount = () => this.observer.disconnect();
+  componentWillUnmount = () => this.observer && this.observer.disconnect();
   // This prevents the `value` prop from being updated, but the alternative
   // is that the component will be re-rendered and the cursor position would
   // be lost. Therefore,
   shouldComponentUpdate = (nextProps, nextState) => {
     return (
-      nextProps.value !== this.textNode.data &&
+      nextProps.value !== this.el.textContent &&
       nextProps.value !== this.props.value
     );
   };
@@ -68,6 +60,7 @@ export default class PlainContentEditable extends Component {
       // console.log("prevent");
       e.preventDefault();
     }
+    this.props.onInput && this.props.onInput(e);
   };
   handlePaste = e => {
     // https://stackoverflow.com/a/12028136
@@ -76,16 +69,17 @@ export default class PlainContentEditable extends Component {
     document.execCommand("insertHTML", false, pasteText);
   };
   render() {
+    // NOTE: intentionally not using `onInput` and onChange`.
+    // They're used elsewhere.
+    const { onInput, onChange, value, ...rest } = this.props;
     return (
-      <ContentEditable
+      <div
         contentEditable
         onKeyDown={this.handleInputKeyDown}
-        onClick={this.selectAll}
         onPaste={this.handlePaste}
-        // Get the singular text node
-        // Also, using `textNode.data`, because: https://stackoverflow.com/a/12287159
-        innerRef={el => (this.textNode = el && el.childNodes[0])}
-        dangerouslySetInnerHTML={{ __html: this.props.value }}
+        ref={el => (this.el = el)}
+        dangerouslySetInnerHTML={{ __html: value }}
+        {...rest}
       />
     );
   }

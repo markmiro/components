@@ -4,51 +4,7 @@ import { createStore } from "redux";
 import { Provider } from "react-redux";
 import { uniqueId, omit } from "lodash";
 import PlainContentEditable from "./PlainContentEditable";
-
-const defaultState = [
-  {
-    id: uniqueId("node"),
-    body: "This is a node",
-    isExpanded: true
-  },
-  {
-    id: uniqueId("node"),
-    body: "This is a node",
-    isExpanded: true,
-    children: [
-      {
-        id: uniqueId("node"),
-        body: "This is a node",
-        isExpanded: true,
-        children: [
-          {
-            id: uniqueId("node"),
-            body: "This is a node",
-            isExpanded: true
-          }
-        ]
-      }
-    ]
-  }
-];
-
-let store = createStore((state = defaultState, action) => {
-  switch (action.type) {
-    case "UPDATE_TEST":
-      return [
-        ...state,
-        { id: uniqueId("node"), body: "This is a node", isExpanded: true }
-      ];
-    case "EDIT_NODE":
-      break;
-    case "TOGGLE_NODE":
-      break;
-    case "ADD_NODE":
-      break;
-    default:
-      return state;
-  }
-});
+import { Button, ButtonGroupH } from "./FormComponents";
 
 const NodeElement = styled.div`
   display: flex;
@@ -78,6 +34,64 @@ const Dot = styled.span`
   }
 `;
 
+const createNode = (body = "") => ({
+  id: uniqueId("node"),
+  body: body,
+  isExpanded: false
+});
+
+const defaultState = [
+  {
+    id: uniqueId("node"),
+    body: "This is a node 1",
+    isExpanded: true
+  },
+  {
+    id: uniqueId("node"),
+    body: "This is a node 2",
+    isExpanded: true,
+    children: [
+      {
+        id: uniqueId("node"),
+        body: "This is a node 2b",
+        isExpanded: true,
+        children: [
+          {
+            id: uniqueId("node"),
+            body: "This is a node 2b1",
+            isExpanded: true
+          }
+        ]
+      }
+    ]
+  }
+];
+
+let store = createStore((state = defaultState, action) => {
+  switch (action.type) {
+    case "ADD_NODE_BELOW":
+      state.forEach((node, i) => {
+        if (node.id === action.id) {
+          state = [
+            ...state.slice(0, i + 1),
+            createNode(),
+            ...state.slice(i + 1)
+          ];
+        }
+      });
+      return state;
+    case "REMOVE_NODE":
+      state.forEach((node, i) => {
+        if (node.id === action.id) {
+          state = [...state.slice(0, i), ...state.slice(i + 1)];
+        }
+      });
+      return state;
+    default:
+      return state;
+  }
+});
+
 export class Node extends Component {
   constructor(props) {
     super(props);
@@ -97,9 +111,34 @@ export class Node extends Component {
         <Dot />
         <div style={{ width: "100%" }}>
           <PlainContentEditable
+            className="no-focus-box"
             value={this.state.text}
             onChange={text => this.setState({ text })}
           />
+          <ButtonGroupH>
+            <Button
+              size="s"
+              onClick={() =>
+                store.dispatch({
+                  type: "ADD_NODE_BELOW",
+                  id: this.props.id
+                })
+              }
+            >
+              Add
+            </Button>
+            <Button
+              size="s"
+              onClick={() =>
+                store.dispatch({
+                  type: "REMOVE_NODE",
+                  id: this.props.id
+                })
+              }
+            >
+              Remove
+            </Button>
+          </ButtonGroupH>
           {this.state.isExpanded && this.props.children}
         </div>
       </NodeElement>
@@ -113,7 +152,7 @@ export class Tree extends Component {
   }
   render() {
     const componentFromNode = node => (
-      <Node key={node.id} text={node.body}>
+      <Node key={node.id} id={node.id} text={node.body}>
         {node.children && node.children.map(componentFromNode)}
       </Node>
     );
