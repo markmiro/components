@@ -92,7 +92,6 @@ class RegisterForm extends React.Component {
             <ValidatedInput
               label="I accept the terms and conditions"
               type="checkbox"
-              innerRef={acceptTerms.ref}
             />
           )}
 
