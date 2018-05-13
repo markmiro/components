@@ -60,7 +60,7 @@ class RegisterForm extends React.Component {
           {email.watchFull(
             <ValidatedInput
               label="Email"
-              errorMessage={
+              validationMessage={
                 email.validationMessage || this.state.isEmailUniqueMessage
               }
               isValidating={this.state.isCheckingIfEmailUnique}

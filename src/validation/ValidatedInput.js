@@ -16,7 +16,6 @@ function isCheckboxOrRadioType(type) {
 const ValidatedInput = ({
   label,
   type,
-  errorMessage,
   validationMessage,
   shouldShake,
   isValid,
@@ -25,7 +24,6 @@ const ValidatedInput = ({
   helper,
   ...rest
 }) => {
-  validationMessage = validationMessage ? validationMessage : errorMessage;
   return (
     <div className={shouldShake ? "shake" : null}>
       {!placeholder && !isCheckboxOrRadioType(type) && <Label>{label}</Label>}
