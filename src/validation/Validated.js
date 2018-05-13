@@ -229,7 +229,7 @@ export default class Validated extends Component {
       ...customProps,
       watch: element => <element.type {...getProps(element.props)} />,
       watchFull: element => (
-        <element.type {...getProps(element.props)} {...customProps} />
+        <element.type {...customProps} {...getProps(element.props)} />
       )
     };
   };
