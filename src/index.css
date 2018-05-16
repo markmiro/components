@@ -25,6 +25,12 @@ body {
   transition-duration: 80ms;*/
 }
 /* For non-form elements */
+::selection {
+  background: hsla(217, 71%, 55%, 0.25); /* WebKit/Blink Browsers */
+}
+::-moz-selection {
+  background: hsla(217, 71%, 55%, 0.25); /* Gecko Browsers */
+}
 *:focus {
   outline: none;
   border-color: hsla(217, 71%, 55%, 0.5) !important;

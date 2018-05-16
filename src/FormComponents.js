@@ -7,7 +7,7 @@ import chroma from "chroma-js";
 const BORDER_RADIUS = "0.3rem";
 
 const ERROR_COLOR = "hsl(349, 66%, 53%)";
-const WARNING_COLOR = "hsl(40, 100%, 31%)";
+const WARNING_COLOR = "hsl(34, 85%, 36%)";
 const SUCCESS_COLOR = "hsl(141, 90%, 28%)";
 
 const statusColor = (defaultColor, alpha = 1) => ({ status }) =>
@@ -30,10 +30,12 @@ export const FinePrint = styled.div`
   color: rgba(0, 0, 0, 0.5);
 `;
 
-const INPUT_PADDING_H = "0.9em";
+const INPUT_PADDING_H = "0.8em";
 const FormControlBase = styled.input`
+  color: rgba(0, 0, 0, 0.7);
   padding: 0.6em ${INPUT_PADDING_H};
   font-size: inherit;
+  font-family: inherit;
   font-size: ${({ size = "m" }) => (size === "s" ? "0.5em" : undefined)};
   border-width: 1px;
   border-style: solid;
@@ -156,7 +158,7 @@ export const Label = styled.label`
 `;
 
 export const InputMessage = FinePrint.extend`
-  color: ${statusColor("rgba(0,0,0,0.5)")};
+  color: ${statusColor("rgba(0,0,0,0.55)")};
   font-size: 75%;
   opacity: 1;
   margin-top: 0.4em;
@@ -197,7 +199,7 @@ const CheckboxOrRadio = styled.input`
 `;
 export const LabeledCheckboxOrRadio = ({ label, innerRef, ...rest }) => (
   <Label style={{ marginBottom: 0 }}>
-    <CheckboxOrRadio ref={innerRef} {...rest} />
+    <CheckboxOrRadio innerRef={innerRef} {...rest} />
     <span style={{ marginLeft: ".5em" }}>{label}</span>
   </Label>
 );
