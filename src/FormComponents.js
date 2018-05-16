@@ -143,11 +143,10 @@ export const TextArea = InputField.withComponent("textarea").extend`
 
 export const Label = styled.label`
   display: inline-block;
-  margin-bottom: 0.5em;
+  margin-bottom: 0.4em;
   font-size: 85%;
   color: ${statusColor("rgba(0,0,0,0.7)")};
   letter-spacing: 0.01em;
-  font-weight: 500;
   &:disabled,
   &.disabled {
     color: black;
