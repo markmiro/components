@@ -192,9 +192,13 @@ export const Select = Button.withComponent("select").extend`
   vertical-align: middle;
 `;
 
+const CheckboxOrRadio = styled.input`
+  transform: translateY(-0.05em);
+  vertical-align: middle;
+`;
 export const LabeledCheckboxOrRadio = ({ label, innerRef, ...rest }) => (
   <Label style={{ marginBottom: 0 }}>
-    <input ref={innerRef} {...rest} />
+    <CheckboxOrRadio ref={innerRef} {...rest} />
     <span style={{ marginLeft: ".5em" }}>{label}</span>
   </Label>
 );
