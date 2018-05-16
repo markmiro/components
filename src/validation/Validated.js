@@ -30,13 +30,13 @@ const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 /*
 TODO:
 - Don't validate if blur caused by switching windows
-- Verify that it works with radio buttons
 - Assert that keys between props: controlledValues and validations match
 - Fix debounced validations being impossible
 - Support being controlled or uncontrolled (for field values and messages)
 - Use `shouldComponentUpdate` to prevent wasted renders
 - If user focuses a field, typed bad input, then presses ENTER key, then we want
   to highlight that field rather than the first one with an error.
+- Verify that it works with radio buttons
 - Fix bug where wrong input is highlighted when a set of fields each have
   an array of validations. It looks like we go through the first item in each
   array and highlight the first field with an error. If there are no errors,
@@ -48,7 +48,12 @@ TODO:
   little errors and mistakes. Then again, we don't make this philosophy explicit
   anywhere else such as by showing an error on only the wrong field.
 
+- TODO V2:
+- Make it obvious if a field contains only whitespace
+- Internationalization?
+
 DOUBLECHECK:
+- Optional fields work
 - Dependent field validation. Maybe we should validate all fields on input and
   only show errors for current field? The downside is it's a lot of validation
   to be doing. But maybe not doing it would be premature optimization.
@@ -197,7 +202,7 @@ export default class Validated extends Component {
     };
 
     const validateIfNonEmpty = e => {
-      getValue() ? validateField() : clear();
+      getValue() && validateField();
     };
 
     const setRef = node => (this._refs[key] = node);
