@@ -48,8 +48,6 @@ export default class EmailFieldValidationWithoutLibrary extends Component {
       <form
         onSubmit={e => {
           e.preventDefault();
-          debugger;
-          const target = e.target;
           this.setState(
             {
               errors: {
@@ -59,7 +57,7 @@ export default class EmailFieldValidationWithoutLibrary extends Component {
             },
             () => {
               if (isEqual(this.state.errors, NO_ERRORS)) {
-                alert("hi");
+                alert("Submitted");
               }
             }
           );
@@ -69,7 +67,6 @@ export default class EmailFieldValidationWithoutLibrary extends Component {
         <VerticalSpacer space=".5em">
           <Input
             value={this.state.email}
-            className={this.state.errors.email && "invalid"}
             status={this.state.errors.email && "error"}
             onChange={e => {
               const email = e.target.value;
