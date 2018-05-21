@@ -4,6 +4,7 @@ import { storiesOf } from "@storybook/react";
 import { PageCard } from "../../FormComponents";
 import AnimatedRegisterForm from "./AnimatedRegisterForm";
 import EmailFieldValidationWithoutLibrary from "./EmailFieldValidationWithoutLibrary";
+import EmailFieldValidationHoc from "./EmailFieldValidationHoc";
 import WithPretendBackend from "./WithPretendBackend";
 import RegisterForm from "./RegisterForm";
 import RadioOptions from "./RadioOptions";
@@ -14,6 +15,7 @@ storiesOf("Forms", module)
   .add("EmailFieldValidationWithoutLibrary", () => (
     <EmailFieldValidationWithoutLibrary />
   ))
+  .add("EmailFieldValidationHOC", () => <EmailFieldValidationHoc />)
   .add("WithPretendBackend", () => <WithPretendBackend />)
   .add("RegisterForm", () => <RegisterForm />)
   .add("RadioOptions", () => <RadioOptions />);
