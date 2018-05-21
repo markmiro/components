@@ -29,7 +29,6 @@ const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
 /*
 TODO:
-- Don't validate if blur caused by switching windows
 - Assert that keys between props: controlledValues and validations match
 - Fix debounced validations being impossible
 - Support being controlled or uncontrolled (for field values and messages)
@@ -49,6 +48,7 @@ TODO:
   anywhere else such as by showing an error on only the wrong field.
 
 - TODO V2:
+- Don't validate if blur caused by switching windows
 - Make it obvious if a field contains only whitespace
 - Internationalization?
 
