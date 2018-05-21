@@ -44,7 +44,11 @@ function emailFormContainer(Thing) {
     constructor(props) {
       super(props);
       this.state = { email: "", errors: NO_ERRORS };
+      this.emailInput = React.createRef();
     }
+    componentDidMount = () => {
+      this.emailInput.current.focus();
+    };
     onChange = e => {
       const email = e.target.value;
       this.setState({
@@ -77,6 +81,8 @@ function emailFormContainer(Thing) {
         () => {
           if (isEqual(this.state.errors, NO_ERRORS)) {
             alert("Submitted");
+          } else {
+            this.emailInput.current.focus();
           }
         }
       );
@@ -89,13 +95,14 @@ function emailFormContainer(Thing) {
           onChange={this.onChange}
           onBlur={this.onBlur}
           onSubmit={this.onSubmit}
+          setRef={this.emailInput}
         />
       );
     };
   };
 }
 
-const Form = ({ email, errors, onChange, onBlur, onSubmit }) => (
+const Form = ({ email, errors, setRef, onChange, onBlur, onSubmit }) => (
   <form onSubmit={onSubmit}>
     <Label status={errors.email && "error"}>Email</Label>
     <VerticalSpacer space=".5em">
@@ -104,6 +111,7 @@ const Form = ({ email, errors, onChange, onBlur, onSubmit }) => (
         status={errors.email && "error"}
         onChange={onChange}
         onBlur={onBlur}
+        innerRef={setRef}
       />
       {errors.email && (
         <InputMessage status="error">{errors.email}</InputMessage>
