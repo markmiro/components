@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { isEqual } from "lodash";
 import {
   Input,
   Label,
@@ -28,22 +27,16 @@ const validators = {
   email: email => /\S+@\S+\.\S+/.test(email)
 };
 
-const invalidMessages = {
-  email: email =>
-    (validators.empty(email) && "Required") ||
-    (!validators.email(email) && "Email is invalid") ||
-    ""
-};
-
-const NO_ERRORS = {
-  email: ""
-};
+const invalidEmailMessages = email =>
+  (validators.empty(email) && "Required") ||
+  (!validators.email(email) && "Email is invalid") ||
+  "";
 
 function emailFormContainer(Thing) {
   return class FormContainer extends Component {
     constructor(props) {
       super(props);
-      this.state = { email: "", errors: NO_ERRORS };
+      this.state = { email: "", errors: "" };
       this.emailInput = React.createRef();
     }
     componentDidMount = () => {
@@ -53,33 +46,24 @@ function emailFormContainer(Thing) {
       const email = e.target.value;
       this.setState({
         email,
-        errors: {
-          ...this.state.errors,
-          email: this.state.errors.email ? invalidMessages.email(email) : ""
-        }
+        errors: this.state.errors ? invalidEmailMessages(email) : ""
       });
     };
     onBlur = e => {
       const email = e.target.value;
       this.setState({
         email,
-        errors: {
-          ...this.state.errors,
-          email: invalidMessages.email(email)
-        }
+        errors: invalidEmailMessages(email)
       });
     };
     onSubmit = e => {
       e.preventDefault();
       this.setState(
         {
-          errors: {
-            ...this.state.errors,
-            email: invalidMessages.email(this.state.email)
-          }
+          errors: invalidEmailMessages(this.state.email)
         },
         () => {
-          if (isEqual(this.state.errors, NO_ERRORS)) {
+          if (this.state.errors === "") {
             alert("Submitted");
           } else {
             this.emailInput.current.focus();
@@ -104,18 +88,16 @@ function emailFormContainer(Thing) {
 
 const Form = ({ email, errors, setRef, onChange, onBlur, onSubmit }) => (
   <form onSubmit={onSubmit}>
-    <Label status={errors.email && "error"}>Email</Label>
+    <Label status={errors && "error"}>Email</Label>
     <VerticalSpacer space=".5em">
       <Input
         value={email}
-        status={errors.email && "error"}
+        status={errors && "error"}
         onChange={onChange}
         onBlur={onBlur}
         innerRef={setRef}
       />
-      {errors.email && (
-        <InputMessage status="error">{errors.email}</InputMessage>
-      )}
+      {errors && <InputMessage status="error">{errors}</InputMessage>}
       <ButtonPrimary type="submit">Submit</ButtonPrimary>
     </VerticalSpacer>
   </form>
