@@ -213,6 +213,7 @@ export default class Validated extends Component {
       checked: getValue(),
       onChange: compose(validateIfValidated, onChange),
       onBlur: compose(validateIfNonEmpty, onBlur),
+      ref: setRef,
       innerRef: setRef,
       ...rest
     }); // You can extract state, but you can't set it
