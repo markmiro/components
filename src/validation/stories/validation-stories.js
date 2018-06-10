@@ -7,6 +7,7 @@ import EmailFieldValidationWithoutLibrary from "./EmailFieldValidationWithoutLib
 import EmailFieldValidationHoc from "./EmailFieldValidationHoc";
 import WithPretendBackend from "./WithPretendBackend";
 import RegisterForm from "./RegisterForm";
+import LoginForm from "./LoginForm";
 import RadioOptions from "./RadioOptions";
 
 storiesOf("Forms", module)
@@ -18,4 +19,5 @@ storiesOf("Forms", module)
   .add("EmailFieldValidationHOC", () => <EmailFieldValidationHoc />)
   .add("WithPretendBackend", () => <WithPretendBackend />)
   .add("RegisterForm", () => <RegisterForm />)
+  .add("LoginForm", () => <LoginForm />)
   .add("RadioOptions", () => <RadioOptions />);
