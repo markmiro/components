@@ -19,7 +19,10 @@ import {
   Some nice things about this example:
   * UI layer is simple
   * Every layer of validation is separate. We have our validations, message, validation logic, and UI all separated
-  * The code feels like it can be abstracted successfully
+  * The code feels like it can be abstracted successfully, with each part of the validation being separated
+    - Plumbing around UI interactions can be further abstracted into a library
+    - Validations can be passed to the library instead of being hard-coded
+    - UI code can talk to the library and get all the interaction logic it needs for validating a form
 */
 
 const validators = {
