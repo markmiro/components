@@ -24,6 +24,7 @@ const ValidatedInput = ({
   helper,
   ...rest
 }) => {
+  const showInputMessage = validationMessage && !isValidating;
   return (
     <div className={shouldShake ? "shake" : null}>
       {!placeholder && !isCheckboxOrRadioType(type) && <Label>{label}</Label>}
@@ -33,16 +34,16 @@ const ValidatedInput = ({
           placeholder={placeholder}
           isValid={isValid && !validationMessage}
           isValidating={isValidating}
+          aria-invalid={showInputMessage}
           {...rest}
         />
       )}
       {isCheckboxOrRadioType(type) && (
         <LabeledCheckboxOrRadio type={type} label={label} {...rest} />
       )}
-      {validationMessage &&
-        !isValidating && (
-          <InputMessage status="error">{validationMessage}</InputMessage>
-        )}
+      {showInputMessage && (
+        <InputMessage status="error">{validationMessage}</InputMessage>
+      )}
     </div>
   );
 };
