@@ -1,6 +1,5 @@
 import validations from "./validations2";
 import validator from "validator";
-import { without } from "lodash";
 import {
   mapValidations,
   normalizeValidations,
@@ -9,7 +8,6 @@ import {
   validateAllWithPromises,
   validateWithPromises
 } from "./validationRunner";
-import { trace } from "./globals";
 
 // TODO: test dependent fields
 
