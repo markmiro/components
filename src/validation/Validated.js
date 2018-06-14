@@ -82,6 +82,27 @@ This component does 3-staged rendering:
 export default class Validated extends Component {
   constructor(props) {
     super(props);
+    if (!this.props.render) {
+      throw new Error(`
+        <Validated /> expects a "render" prop.
+        Example:
+        <Validated
+          render={() => <div>Hello</div>}
+        />
+      `);
+      return;
+    }
+    if (!this.props.validations) {
+      throw new Error(`
+        <Validated /> expects a "validations" prop.
+        Example:
+        <Validated
+          validations={{ over18 => over18 > 17 ? '' : 'Too young' }}
+          render={({ over18 }) => <div>Hello</div>}
+        />
+      `);
+      return;
+    }
     this._validateAll = this._validateAll.bind(this);
     this._refs = {};
     this.state = this._emptyState();
