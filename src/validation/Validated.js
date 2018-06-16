@@ -22,7 +22,7 @@ import { trace } from "../globals";
 
 const EMPTY_VALUE = "";
 const NO_ERROR = "";
-const NO_VALIDATION = null;
+const NO_VALIDATION = null; // TODO: rename to UNTOUCHED?
 
 // return new function that takes an argument and passes it down to all functions
 const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
@@ -180,6 +180,7 @@ export default class Validated extends Component {
     const clear = () => setMessage(NO_VALIDATION);
 
     const validateField = () => {
+      console.log("validateField()");
       /*
       Some extra logic is added for this scenario:
       - We start with a field with a sync validation and an async one
@@ -200,26 +201,39 @@ export default class Validated extends Component {
     };
 
     const validateIfValidated = eventOrValue => {
-      const doIt = () =>
+      function validateIfValidatedForReal() {
+        console.log(
+          "validateIfValidatedForReal()",
+          `this.state._messages[${key}]: `,
+          this.state._messages[key]
+        );
         this.state._messages[key] !== NO_VALIDATION && validateField();
+      }
+
       if (isControlled()) {
-        doIt();
+        validateIfValidatedForReal();
       } else {
-        let value;
         if (
           eventOrValue &&
           eventOrValue.constructor &&
           eventOrValue.constructor.name === "SyntheticEvent"
         ) {
           const event = eventOrValue;
-          value =
+          const value =
             event.target.type === "checkbox"
               ? event.target.checked
               : event.target.value;
+          console.log(
+            "validateIfValidated() constructor:",
+            eventOrValue.constructor.name,
+            "value:",
+            value
+          );
+          this.setState({ [key]: value }, validateIfValidatedForReal);
         } else {
-          value = eventOrValue;
+          const value = eventOrValue;
+          this.setState({ [key]: value }, validateIfValidatedForReal);
         }
-        this.setState({ [key]: value }, doIt);
       }
     };
 
@@ -233,8 +247,14 @@ export default class Validated extends Component {
       name: key,
       value: getValue(),
       checked: getValue(),
-      onChange: compose(validateIfValidated, onChange),
-      onBlur: compose(validateIfNonEmpty, onBlur),
+      onChange: compose(
+        validateIfValidated,
+        onChange
+      ),
+      onBlur: compose(
+        validateIfNonEmpty,
+        onBlur
+      ),
       ref: setRef,
       innerRef: setRef,
       ...rest
