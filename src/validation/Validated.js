@@ -201,8 +201,7 @@ export default class Validated extends Component {
 
     const validateIfValidated = eventOrValue => {
       const doIt = () =>
-        this.state._messages[key] !== NO_VALIDATION &&
-        setTimeout(validateField);
+        this.state._messages[key] !== NO_VALIDATION && validateField();
       if (isControlled()) {
         doIt();
       } else {
