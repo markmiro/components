@@ -2,7 +2,7 @@ import React from "react";
 import Validated from "./Validated";
 import { shallow, mount } from "enzyme";
 
-describe.only("<Validated />", () => {
+describe("<Validated />", () => {
   it("renders without crashing", () => {
     shallow(
       <Validated
@@ -24,134 +24,85 @@ describe.only("<Validated />", () => {
 
   // it("should work with textarea", () => {});
 
-  it("works when spelling everything out", () => {
-    const wrapper = mount(
-      <Validated
-        validations={{
-          isRequired: input => {
-            console.log("isRequired() input: '", input, "'");
-            return input ? "" : "Required";
-          }
-        }}
-        render={({ isRequired }) => {
-          console.log(
-            "render() value: '",
-            isRequired.value,
-            "' errors: '",
-            isRequired.validationMessage,
-            "'"
-          );
-          return (
+  describe("should validate <input /> properly using `onChange` and `onBlur`", () => {
+    function testWrapperForBlurAndChangeOnInput(reactElement) {
+      const wrapper = mount(reactElement);
+      const isRequiredSpy = jest.spyOn(
+        wrapper.prop("validations"),
+        "isRequired"
+      );
+      const inputValue = "spam";
+
+      // Focus then blur, validate that error doesn't get show up
+      wrapper.find("input").simulate("change", { target: { value: "" } });
+      wrapper.find("input").simulate("blur");
+      expect(wrapper.find(".error").text()).toBe("");
+
+      // Type "spam", verify that validation didn't start yet
+      wrapper
+        .find("input")
+        .simulate("change", { target: { value: inputValue } });
+      expect(wrapper.find("input").prop("value")).toBe(inputValue);
+      expect(wrapper.find(".error").text()).toBe("");
+
+      // Blur, verify that input is validated
+      wrapper.find("input").simulate("blur");
+      expect(isRequiredSpy).toBeCalledWith(inputValue);
+      expect(wrapper.find(".error").text()).toBe("");
+
+      // Type "", validate that error shows up immediately
+      wrapper.find("input").simulate("change", { target: { value: "" } });
+      expect(isRequiredSpy).toBeCalledWith("");
+      expect(wrapper.find("input").prop("value")).toBe("");
+      expect(wrapper.find(".error").text()).toBe("Required");
+
+      // Type "spam", verify that error immediately disappears again
+      wrapper
+        .find("input")
+        .simulate("change", { target: { value: inputValue } });
+      expect(isRequiredSpy).toBeCalledWith(inputValue);
+      expect(wrapper.find(".error").text()).toBe("");
+
+      expect(isRequiredSpy).toHaveBeenCalledTimes(3);
+    }
+
+    it("works with longhand way", () =>
+      testWrapperForBlurAndChangeOnInput(
+        <Validated
+          validations={{
+            isRequired: input => (input ? "" : "Required")
+          }}
+          render={({ isRequired }) => (
             <form>
               <input
                 className={isRequired.shouldShake ? "shake" : ""}
                 ref={isRequired.ref}
                 value={isRequired.value}
-                onChange={e => {
-                  console.log("onChange() value: '", e.target.value, "'");
-                  isRequired.validateIfValidated(e);
-                }}
-                onBlur={() => {
-                  console.log("onBlur()");
-                  isRequired.validateIfNonEmpty();
-                }}
+                onChange={isRequired.validateIfValidated}
+                onBlur={isRequired.validateIfNonEmpty}
               />
               {isRequired.isValid ? "valid" : ""}
               <div className="error">{isRequired.validationMessage}</div>
             </form>
-          );
-        }}
-      />
-    );
-    const isRequiredSpy = jest.spyOn(wrapper.prop("validations"), "isRequired");
-    const inputValue = "spam";
+          )}
+        />
+      ));
 
-    // Focus then blur, validate that error doesn't get show up
-    wrapper.find("input").simulate("change", { target: { value: "" } });
-    wrapper.find("input").simulate("blur");
-    expect(wrapper.find(".error").text()).toBe("");
-
-    // Type "spam", verify that validation didn't start yet
-    wrapper.find("input").simulate("change", { target: { value: inputValue } });
-    expect(wrapper.find("input").prop("value")).toBe(inputValue);
-    expect(wrapper.find(".error").text()).toBe("");
-
-    // Blur, verify that input is validated
-    wrapper.find("input").simulate("blur");
-    expect(isRequiredSpy).toBeCalledWith(inputValue);
-    expect(wrapper.find(".error").text()).toBe("");
-
-    // Type "", validate that error shows up immediately
-    wrapper.find("input").simulate("change", { target: { value: "" } });
-    expect(isRequiredSpy).toBeCalledWith("");
-    expect(wrapper.find("input").prop("value")).toBe("");
-    expect(wrapper.find(".error").text()).toBe("Required");
-
-    // Type "spam", verify that error immediately disappears again
-    wrapper.find("input").simulate("change", { target: { value: inputValue } });
-    expect(isRequiredSpy).toBeCalledWith(inputValue);
-    expect(wrapper.find(".error").text()).toBe("");
-
-    expect(isRequiredSpy).toHaveBeenCalledTimes(3);
-  });
-
-  it("works with the shorthand way", () => {
-    const wrapper = mount(
-      <Validated
-        validations={{
-          isRequired: input => {
-            console.log("isRequired() input: '", input, "'");
-            return input ? "" : "Required";
-          }
-        }}
-        render={({ isRequired }) => {
-          console.log(
-            "render() value: '",
-            isRequired.value,
-            "' errors: '",
-            isRequired.validationMessage,
-            "'"
-          );
-          return (
+    it("works with shorthand way", () =>
+      testWrapperForBlurAndChangeOnInput(
+        <Validated
+          validations={{
+            isRequired: input => (input ? "" : "Required")
+          }}
+          render={({ isRequired }) => (
             <form>
               {isRequired.watch(<input />)}
               {isRequired.isValid ? "valid" : ""}
               <div className="error">{isRequired.validationMessage}</div>
             </form>
-          );
-        }}
-      />
-    );
-    const isRequiredSpy = jest.spyOn(wrapper.prop("validations"), "isRequired");
-    const inputValue = "spam";
-
-    // Focus then blur, validate that error doesn't get show up
-    wrapper.find("input").simulate("change", { target: { value: "" } });
-    wrapper.find("input").simulate("blur");
-    expect(wrapper.find(".error").text()).toBe("");
-
-    // Type "spam", verify that validation didn't start yet
-    wrapper.find("input").simulate("change", { target: { value: inputValue } });
-    expect(wrapper.find("input").prop("value")).toBe(inputValue);
-    expect(wrapper.find(".error").text()).toBe("");
-
-    // Blur, verify that input is validated
-    wrapper.find("input").simulate("blur");
-    expect(isRequiredSpy).toBeCalledWith(inputValue);
-    expect(wrapper.find(".error").text()).toBe("");
-
-    // Type "", validate that error shows up immediately
-    wrapper.find("input").simulate("change", { target: { value: "" } });
-    expect(isRequiredSpy).toBeCalledWith("");
-    expect(wrapper.find("input").prop("value")).toBe("");
-    expect(wrapper.find(".error").text()).toBe("Required");
-
-    // Type "spam", verify that error immediately disappears again
-    wrapper.find("input").simulate("change", { target: { value: inputValue } });
-    expect(isRequiredSpy).toBeCalledWith(inputValue);
-    expect(wrapper.find(".error").text()).toBe("");
-
-    expect(isRequiredSpy).toHaveBeenCalledTimes(3);
+          )}
+        />
+      ));
   });
 
   it("doesn't check for errors on change", () => {});
