@@ -228,7 +228,7 @@ export default class Validated extends Component {
         ) {
           const event = eventOrValue;
           const value =
-            event.target.type === "checkbox"
+            event.target.type === "checkbox" || event.target.type === "radio"
               ? event.target.checked
               : event.target.value;
           console.log(
@@ -251,10 +251,17 @@ export default class Validated extends Component {
 
     const getProps = element => {
       const { onChange, onBlur, ...rest } = element.props;
+      const isUsingChecked =
+        element.props.type === "checkbox" || element.props.type === "radio";
+
+      // Need to cast to bool since otherwise we'll get `undefined` and therefore
+      // React warnings about uncontrolled `checked` being changed to a controlled input
+      const value = isUsingChecked
+        ? { checked: !!getValue() }
+        : { value: getValue() };
       return {
         name: key,
-        value: getValue(),
-        checked: getValue(),
+        ...value,
         [isDOMTypeElement(element) ? "ref" : "innerRef"]: this._refs[key],
         onChange: compose(
           validateIfValidated,
