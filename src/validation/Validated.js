@@ -201,14 +201,14 @@ export default class Validated extends Component {
     };
 
     const validateIfValidated = eventOrValue => {
-      function validateIfValidatedForReal() {
+      const validateIfValidatedForReal = () => {
         console.log(
           "validateIfValidatedForReal()",
           `this.state._messages[${key}]: `,
           this.state._messages[key]
         );
         this.state._messages[key] !== NO_VALIDATION && validateField();
-      }
+      };
 
       if (isControlled()) {
         validateIfValidatedForReal();
