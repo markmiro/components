@@ -27,6 +27,9 @@ const NO_VALIDATION = null; // TODO: rename to UNTOUCHED?
 // return new function that takes an argument and passes it down to all functions
 const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
+const isDOMTypeElement = element =>
+  React.isValidElement(element) && typeof element.type === "string";
+
 /*
 TODO:
 - Prevent from breaking when rendered on the server
@@ -104,7 +107,9 @@ export default class Validated extends Component {
       return;
     }
     this._validateAll = this._validateAll.bind(this);
-    this._refs = {};
+    this._refs = mapValidations(this.props.validations, () =>
+      React.createRef()
+    );
     this.state = this._emptyState();
   }
   _emptyState = () => {
@@ -129,7 +134,8 @@ export default class Validated extends Component {
       _shouldShake: mapValidations(this.props.validations, () => false)
     });
     const keyToFocus = findKey(messages, message => !!message);
-    this._refs[keyToFocus] && this._refs[keyToFocus].focus();
+    const elementToFocus = this._refs[keyToFocus];
+    elementToFocus && elementToFocus.current && elementToFocus.current.focus();
     this.setState(
       {
         _messages: messages, // Shake the first one with an error
@@ -146,8 +152,10 @@ export default class Validated extends Component {
     areAllValid(validateAll(this.props.validations, this.fields()));
   _validateAll = onValidate => {
     const messages = validateAll(this.props.validations, this.fields());
-    this._setValidationMessages(messages, () =>
-      onValidate(this.fields(), messages, areAllValid(messages))
+    this._setValidationMessages(
+      messages,
+      () =>
+        onValidate && onValidate(this.fields(), messages, areAllValid(messages))
     );
   };
   _helpersForKey = key => {
@@ -241,24 +249,24 @@ export default class Validated extends Component {
       getValue() && validateField();
     };
 
-    const setRef = node => (this._refs[key] = node);
-
-    const getProps = ({ onChange, onBlur, ...rest } = {}) => ({
-      name: key,
-      value: getValue(),
-      checked: getValue(),
-      onChange: compose(
-        validateIfValidated,
-        onChange
-      ),
-      onBlur: compose(
-        validateIfNonEmpty,
-        onBlur
-      ),
-      ref: setRef,
-      innerRef: setRef,
-      ...rest
-    }); // You can extract state, but you can't set it
+    const getProps = element => {
+      const { onChange, onBlur, ...rest } = element.props;
+      return {
+        name: key,
+        value: getValue(),
+        checked: getValue(),
+        [isDOMTypeElement(element) ? "ref" : "innerRef"]: this._refs[key],
+        onChange: compose(
+          validateIfValidated,
+          onChange
+        ),
+        onBlur: compose(
+          validateIfNonEmpty,
+          onBlur
+        ),
+        ...rest
+      }; // You can extract state, but you can't set it
+    };
 
     const customProps = {
       validationMessage: this.state._messages[key],
@@ -273,11 +281,11 @@ export default class Validated extends Component {
       validateValue: value => this.setState({ [key]: value }, validateField),
       validateIfValidated,
       validateIfNonEmpty,
-      ref: setRef,
+      ref: this._refs[key],
       ...customProps,
-      watch: element => <element.type {...getProps(element.props)} />,
+      watch: element => <element.type {...getProps(element)} />,
       watchFull: element => (
-        <element.type {...customProps} {...getProps(element.props)} />
+        <element.type {...customProps} {...getProps(element)} />
       )
     };
   };
