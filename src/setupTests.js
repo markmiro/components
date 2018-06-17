@@ -7,3 +7,4 @@ configure({ adapter: new Adapter() });
 const doc = jsdom.jsdom("<!doctype html><html><body></body></html>");
 global.document = doc;
 global.window = doc.defaultView;
+global.console.log = () => {};
