@@ -228,7 +228,7 @@ export default class Validated extends Component {
         ) {
           const event = eventOrValue;
           const value =
-            event.target.type === "checkbox" || event.target.type === "radio"
+            event.target.type === "checkbox"
               ? event.target.checked
               : event.target.value;
           console.log(
@@ -251,14 +251,51 @@ export default class Validated extends Component {
 
     const getProps = element => {
       const { onChange, onBlur, ...rest } = element.props;
-      const isUsingChecked =
-        element.props.type === "checkbox" || element.props.type === "radio";
+      if (element.props.type === "radio") {
+        throw new Error(`
+          Validating a single radio input isn't supported. To validate a radio group,
+          create a component that displays a list of radio options and has an external API
+          similar to a <select />.
 
+          Longhand Example:
+
+          render={({ myField }) =>
+            <form>
+              <MyBasicRadioGroup
+                innerRef={myField.ref}
+                value={myField.value}
+                onChange={value => myField.validateValue(value)}
+                radioOptions={{
+                  optionId1: 'The first option',
+                  optionId2: 'The second option',
+                  optionId3: 'The third option'
+                }}
+              />
+              {myField.validationMessage}
+            </form>
+          }
+
+          Shorthand Example:
+
+          render={({ myField }) =>
+            myField.watch(
+              <MyFancyRadioGroup
+                radioOptions={{
+                  optionId1: 'The first option',
+                  optionId2: 'The second option',
+                  optionId3: 'The third option'
+                }}
+              />
+            )
+          )}
+        `);
+      }
       // Need to cast to bool since otherwise we'll get `undefined` and therefore
       // React warnings about uncontrolled `checked` being changed to a controlled input
-      const value = isUsingChecked
-        ? { checked: !!getValue() }
-        : { value: getValue() };
+      const value =
+        element.props.type === "checkbox"
+          ? { checked: !!getValue() }
+          : { value: getValue() };
       return {
         name: key,
         ...value,

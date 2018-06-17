@@ -35,7 +35,6 @@ describe("<Validated />", () => {
         wrapper
           .find(".formField")
           .simulate("change", { target: { type: "checkbox", checked: true } });
-        console.info(wrapper.find(".formField").debug());
         expect(wrapper.find(".formField").prop("checked")).toBe(inputValue);
         expect(wrapper.find(".error").text()).toBe("");
 
@@ -81,7 +80,21 @@ describe("<Validated />", () => {
           ));
       });
 
-      describe('<input type="radio" />', () => {});
+      describe('<input type="radio" />', () => {
+        it("throws an error", () =>
+          expect(() =>
+            shallow(
+              <Validated
+                validations={{
+                  isRequired: input => (input ? "" : "Required")
+                }}
+                render={({ isRequired }) =>
+                  isRequired.watch(<radio type="radio" className="formField" />)
+                }
+              />
+            )
+          ).toThrow("Validating a single radio input isn't supported"));
+      });
     });
 
     describe("For fields that use `value`", () => {
