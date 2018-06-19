@@ -21,7 +21,6 @@ const ValidatedInput = ({
   isValid,
   isValidating,
   placeholder,
-  helper,
   ...rest
 }) => {
   const showInputMessage = validationMessage && !isValidating;
