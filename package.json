@@ -10,7 +10,6 @@
     "element-resize-detector": "^1.1.13",
     "husky": "^0.14.3",
     "lodash": "^4.17.5",
-    "material-ui-icons": "^1.0.0-beta.17",
     "p-locate": "^2.0.0",
     "prettier": "^1.10.2",
     "query-string": "^6.1.0",
