@@ -9,6 +9,7 @@ import WithPretendBackend from "./WithPretendBackend";
 import RegisterForm from "./RegisterForm";
 import LoginForm from "./LoginForm";
 import RadioOptions from "./RadioOptions";
+import OptionalInput from "./OptionalInput";
 import Validated from "../Validated";
 
 storiesOf("Forms", module)
@@ -20,6 +21,7 @@ storiesOf("Forms", module)
   .add("EmailFieldValidationHOC", () => <EmailFieldValidationHoc />)
   .add("WithPretendBackend", () => <WithPretendBackend />)
   .add("RegisterForm", () => <RegisterForm />)
+  .add("OptionalInput", () => <OptionalInput />)
   .add("LoginForm", () => <LoginForm />)
   .add("RadioOptions", () => <RadioOptions />)
   .add("refs on <input />", () => (
