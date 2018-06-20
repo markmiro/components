@@ -27,7 +27,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=node",
+    "test": "react-scripts test",
     "test:debug": "node --debug-brk --inspect ./node_modules/.bin/jest --runInBand",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 9009 -s public",

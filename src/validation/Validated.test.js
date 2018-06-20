@@ -1,6 +1,7 @@
 import React from "react";
 import Validated from "./Validated";
 import { shallow, mount } from "enzyme";
+import ReactDOM from "react-dom";
 
 describe("<Validated />", () => {
   it("renders without crashing", () => {
@@ -320,7 +321,38 @@ describe("<Validated />", () => {
   // it("doesn't allow async validations to cause non-async errors to disappear", () => {});
 
   // // This should also scroll the window to the first input with an error
-  // it("shakes the first field that has an error, and focuses it on submit", () => {});
+  it("shakes the first field that has an error, and focuses it on submit", () => {
+    const isRequired = input => (input ? "" : "Required");
+    ReactDOM.render(
+      <Validated
+        validations={{
+          fname: isRequired,
+          lname: isRequired
+        }}
+        render={({ fname, lname }, { validateAll }) => (
+          <form
+            className="theForm"
+            onSubmit={e => {
+              e.preventDefault();
+              validateAll();
+            }}
+          >
+            {fname.shouldShake && "fname.shouldShake"}
+            {fname.watch(<input className="formField1" />)}
+            {lname.watch(<input className="formField2" />)}
+            <button type="submit">Submit</button>
+          </form>
+        )}
+      />,
+      document.querySelector("#react-app")
+    );
+
+    document.querySelector("[type=submit]").click();
+    expect(document.activeElement.className).toBe("formField1");
+    expect(document.querySelector("form").innerHTML).toMatch(
+      "fname.shouldShake"
+    );
+  });
 
   // // Ex: prefilled by props or state, or prefilled by something like a password manager
   // it("should work with autofilling", () => {
@@ -344,7 +376,7 @@ describe("<Validated />", () => {
 
   // it("validates and displays messages for all fields on submit", () => {});
 
-  // it("sets async errors from server to correct fields and focuses first field on submit", () => {});
+  // it("sets async errors from server to correct fields and focuses first error field on submit", () => {});
 
   // it("prevents async errors from server being cleared until the next submit", () => {});
 
