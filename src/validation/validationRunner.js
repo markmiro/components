@@ -39,11 +39,7 @@ export const mapValidations = (validations, cb) =>
 export const areAllValid = messages =>
   every(messages, message => message === PREFERRED_NIL);
 
-export const validateAllWithFunction = (
-  validations,
-  fields,
-  fieldValidator
-) => {
+export const validateAllWith = (validations, fields, fieldValidator) => {
   const normalizedValidations = normalizeValidations(validations)(fields);
   if (!isEqual(Object.keys(normalizedValidations), Object.keys(fields))) {
     throw new Error("The shape of the validations and fields should match.");
@@ -61,7 +57,7 @@ export const validate = (maybeValidationArray, toValidate) =>
   );
 
 export const validateAll = (validations, fields) =>
-  validateAllWithFunction(validations, fields, validate);
+  validateAllWith(validations, fields, validate);
 
 /*
 Return the first non-empty `resolve` from `promises` or an empty value
@@ -73,7 +69,7 @@ export const validateWithPromises = (maybeValidationArray, toValidate) =>
   ).then(normalizeNil);
 
 export const validateAllWithPromises = (validations, fields) => {
-  const validationPromises = validateAllWithFunction(
+  const validationPromises = validateAllWith(
     validations,
     fields,
     validateWithPromises
