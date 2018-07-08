@@ -7,13 +7,12 @@ import {
   isObject,
   filter,
   every,
-  isNil,
+  isUndefined,
   zipObject,
   unzip,
   isEqual
 } from "lodash";
 import pLocate from "p-locate";
-import { trace } from "../globals";
 
 /*
 TODO: consider allowing consumer to optionally define this.
@@ -22,27 +21,20 @@ depend on comparisons to
 */
 
 /*
-  Turns messages like these into a `false` value
-  ["", ""] => false
-  {"one": [""], "two": ""} => false
+Turns messages like these into a `false` value
+["", ""] => false
+{"one": [""], "two": ""} => false
 */
-const isNotEmpty = message =>
-  isObject(message) ? !isEmpty(filter(message, isNotEmpty)) : !!message;
+const hasMessage = message =>
+  isObject(message) ? !isEmpty(filter(message, hasMessage)) : !!message;
 
 const PREFERRED_NIL = "";
 
-const normalizeNil = value => (isNil(value) ? PREFERRED_NIL : value);
+// Because `find` and `pLocate` return a
+const nilIfNotFound = value => (isUndefined(value) ? PREFERRED_NIL : value);
 
 export const normalizeValidations = validations =>
   isFunction(validations) ? validations : () => validations;
-
-export const mapValidations = (validations, cb) =>
-  mapValues(normalizeValidations(validations)(), (value, key) =>
-    cb(key, value)
-  );
-
-export const areAllValid = messages =>
-  every(messages, message => message === PREFERRED_NIL);
 
 export const validateAllWith = (validations, fields, fieldValidator) => {
   const normalizedValidations = normalizeValidations(validations)(fields);
@@ -55,10 +47,10 @@ export const validateAllWith = (validations, fields, fieldValidator) => {
 };
 
 export const validate = (maybeValidationArray, toValidate) =>
-  normalizeNil(
+  nilIfNotFound(
     castArray(maybeValidationArray)
       .map(validation => validation(toValidate))
-      .find(isNotEmpty)
+      .find(hasMessage)
   );
 
 export const validateAll = (validations, fields) =>
@@ -70,8 +62,8 @@ Return the first non-empty `resolve` from `promises` or an empty value
 export const validateWithPromises = (maybeValidationArray, toValidate) =>
   pLocate(
     castArray(maybeValidationArray).map(validation => validation(toValidate)),
-    isNotEmpty
-  ).then(normalizeNil);
+    hasMessage
+  ).then(nilIfNotFound);
 
 export const validateAllWithPromises = (validations, fields) => {
   const validationPromises = validateAllWith(
@@ -91,3 +83,14 @@ export const validateAllWithPromises = (validations, fields) => {
   */
   return Promise.all(values).then(messages => zipObject(keys, messages));
 };
+
+// ---
+// Helpers that aren't used internally
+
+export const mapValidations = (validations, cb) =>
+  mapValues(normalizeValidations(validations)(), (value, key) =>
+    cb(key, value)
+  );
+
+export const areAllValid = messages =>
+  every(messages, message => !hasMessage(message));
