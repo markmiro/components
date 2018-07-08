@@ -21,6 +21,11 @@ The rationale is that a validtion may return a non-string. However, we
 depend on comparisons to
 */
 
+/*
+  Turns messages like these into a `false` value
+  ["", ""] => false
+  {"one": [""], "two": ""} => false
+*/
 const isNotEmpty = message =>
   isObject(message) ? !isEmpty(filter(message, isNotEmpty)) : !!message;
 
