@@ -1,16 +1,5 @@
 import React, { Component } from "react";
-import {
-  isEqual,
-  mapValues,
-  forEach,
-  includes,
-  isFunction,
-  isEmpty,
-  castArray,
-  first,
-  omit,
-  findKey
-} from "lodash";
+import { isEqual, omit, findKey } from "lodash";
 import {
   areAllValid,
   normalizeValidations,
@@ -18,7 +7,6 @@ import {
   validate,
   validateAll
 } from "./validationRunner";
-import { trace } from "../globals";
 
 const EMPTY_VALUE = "";
 const NO_ERROR = "";
