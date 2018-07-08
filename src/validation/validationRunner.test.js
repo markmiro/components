@@ -40,7 +40,7 @@ describe("validate()", () => {
     const errorMessages = validate(validations.required, "Bla");
     expect(errorMessages).toEqual(NO_MESSAGE);
   });
-  test("with multiple error messages", () => {
+  test("with multiple error messages via function that returns an array", () => {
     const isValidPassword = value => [
       /[0-9]/.test(value) ? "" : "Please include a number",
       /[A-Z]/.test(value) ? "" : "Please include a captital letter"
@@ -54,7 +54,7 @@ describe("validate()", () => {
       "Please include a captital letter"
     ]);
   });
-  test("with multiple error messages", () => {
+  test("with multiple error messages via array of validators", () => {
     const isValidPassword = [
       value => (/[0-9]/.test(value) ? "" : "Please include a number"),
       value => (/[A-Z]/.test(value) ? "" : "Please include a captital letter")
