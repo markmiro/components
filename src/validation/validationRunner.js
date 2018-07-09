@@ -4,7 +4,7 @@ import {
   castArray,
   toPairs,
   isEmpty,
-  isObject,
+  isObjectLike,
   filter,
   every,
   isUndefined,
@@ -26,7 +26,7 @@ Turns messages like these into a `false` value
 {"one": [""], "two": ""} => false
 */
 const hasMessage = message =>
-  isObject(message) ? !isEmpty(filter(message, hasMessage)) : !!message;
+  isObjectLike(message) ? !isEmpty(filter(message, hasMessage)) : !!message;
 
 const PREFERRED_NIL = "";
 

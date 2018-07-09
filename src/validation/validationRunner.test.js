@@ -36,6 +36,12 @@ describe("validate()", () => {
     const errorMessages = validate(validations.required, "");
     expect(errorMessages).toEqual("Required");
   });
+  test("with function returned as validation message", () => {
+    const errorFunc = () => {};
+    const randomValidation = value => errorFunc;
+    const errorMessages = validate(randomValidation, "");
+    expect(errorMessages).toEqual(errorFunc);
+  });
   test("with valid value", () => {
     const errorMessages = validate(validations.required, "Bla");
     expect(errorMessages).toEqual(NO_MESSAGE);
