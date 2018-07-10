@@ -3,6 +3,17 @@ import Validated from "./Validated";
 import { shallow, mount } from "enzyme";
 import ReactDOM from "react-dom";
 
+// TODO: enhance validation tests by checking if "checkmark" is also being displayed
+// TODO: enhance validation tests by testing with composite components like `ValidatedInput`
+
+const NO_ERROR = { empty: true };
+const NO_VALIDATION = null;
+const NO_ERROR_STR = JSON.stringify(NO_ERROR);
+const NO_VALIDATION_STR = JSON.stringify(NO_VALIDATION);
+const ERROR = "Required";
+const isRequired = input => (input ? NO_ERROR : ERROR);
+const ERROR_STR = JSON.stringify(ERROR);
+
 describe("<Validated />", () => {
   it("renders without crashing", () => {
     shallow(
@@ -30,19 +41,19 @@ describe("<Validated />", () => {
           .find(".formField")
           .simulate("change", { type: "checkbox", target: { checked: false } });
         wrapper.find(".formField").simulate("blur");
-        expect(wrapper.find(".error").text()).toBe("");
+        expect(wrapper.find(".error").text()).toBe(NO_VALIDATION_STR);
 
         // Input "checked: true", verify that validation didn't start yet
         wrapper
           .find(".formField")
           .simulate("change", { target: { type: "checkbox", checked: true } });
         expect(wrapper.find(".formField").prop("checked")).toBe(inputValue);
-        expect(wrapper.find(".error").text()).toBe("");
+        expect(wrapper.find(".error").text()).toBe(NO_VALIDATION_STR);
 
         // Blur, verify that input is validated
         wrapper.find(".formField").simulate("blur");
         expect(isRequiredSpy).toBeCalledWith(inputValue);
-        expect(wrapper.find(".error").text()).toBe("");
+        expect(wrapper.find(".error").text()).toBe(NO_ERROR_STR);
 
         // Input "checked: false", validate that error shows up immediately
         wrapper
@@ -50,14 +61,14 @@ describe("<Validated />", () => {
           .simulate("change", { target: { type: "checkbox", checked: false } });
         expect(isRequiredSpy).toBeCalledWith(false);
         expect(wrapper.find(".formField").prop("checked")).toBe(false);
-        expect(wrapper.find(".error").text()).toBe("Required");
+        expect(wrapper.find(".error").text()).toBe(ERROR_STR);
 
         // Input "checked: true", verify that error immediately disappears again
         wrapper.find(".formField").simulate("change", {
           target: { type: "checkbox", checked: inputValue }
         });
         expect(isRequiredSpy).toBeCalledWith(inputValue);
-        expect(wrapper.find(".error").text()).toBe("");
+        expect(wrapper.find(".error").text()).toBe(NO_ERROR_STR);
 
         expect(isRequiredSpy).toHaveBeenCalledTimes(3);
       }
@@ -66,7 +77,7 @@ describe("<Validated />", () => {
           testWrapperForBlurAndChangeOnField(
             <Validated
               validations={{
-                isRequired: input => (input ? "" : "Required")
+                isRequired
               }}
               render={({ isRequired }) => (
                 <form>
@@ -74,7 +85,9 @@ describe("<Validated />", () => {
                     <input type="checkbox" className="formField" />
                   )}
                   {isRequired.isValid ? "valid" : ""}
-                  <div className="error">{isRequired.validationMessage}</div>
+                  <div className="error">
+                    {JSON.stringify(isRequired.validationMessage)}
+                  </div>
                 </form>
               )}
             />
@@ -87,7 +100,7 @@ describe("<Validated />", () => {
             shallow(
               <Validated
                 validations={{
-                  isRequired: input => (input ? "" : "Required")
+                  isRequired
                 }}
                 render={({ isRequired }) =>
                   isRequired.watch(<radio type="radio" className="formField" />)
@@ -112,19 +125,19 @@ describe("<Validated />", () => {
           .find(".formField")
           .simulate("change", { target: { value: "" } });
         wrapper.find(".formField").simulate("blur");
-        expect(wrapper.find(".error").text()).toBe("");
+        expect(wrapper.find(".error").text()).toBe(NO_VALIDATION_STR);
 
         // Input "spam", verify that validation didn't start yet
         wrapper
           .find(".formField")
           .simulate("change", { target: { value: inputValue } });
         expect(wrapper.find(".formField").prop("value")).toBe(inputValue);
-        expect(wrapper.find(".error").text()).toBe("");
+        expect(wrapper.find(".error").text()).toBe(NO_VALIDATION_STR);
 
         // Blur, verify that input is validated
         wrapper.find(".formField").simulate("blur");
         expect(isRequiredSpy).toBeCalledWith(inputValue);
-        expect(wrapper.find(".error").text()).toBe("");
+        expect(wrapper.find(".error").text()).toBe(NO_ERROR_STR);
 
         // Input "", validate that error shows up immediately
         wrapper
@@ -132,14 +145,14 @@ describe("<Validated />", () => {
           .simulate("change", { target: { value: "" } });
         expect(isRequiredSpy).toBeCalledWith("");
         expect(wrapper.find(".formField").prop("value")).toBe("");
-        expect(wrapper.find(".error").text()).toBe("Required");
+        expect(wrapper.find(".error").text()).toBe(ERROR_STR);
 
         // Input "spam", verify that error immediately disappears again
         wrapper
           .find(".formField")
           .simulate("change", { target: { value: inputValue } });
         expect(isRequiredSpy).toBeCalledWith(inputValue);
-        expect(wrapper.find(".error").text()).toBe("");
+        expect(wrapper.find(".error").text()).toBe(NO_ERROR_STR);
 
         expect(isRequiredSpy).toHaveBeenCalledTimes(3);
       }
@@ -149,7 +162,7 @@ describe("<Validated />", () => {
           testWrapperForBlurAndChangeOnField(
             <Validated
               validations={{
-                isRequired: input => (input ? "" : "Required")
+                isRequired
               }}
               render={({ isRequired }) => (
                 <form>
@@ -161,7 +174,9 @@ describe("<Validated />", () => {
                     onBlur={isRequired.validateIfNonEmpty}
                   />
                   {isRequired.isValid ? "valid" : ""}
-                  <div className="error">{isRequired.validationMessage}</div>
+                  <div className="error">
+                    {JSON.stringify(isRequired.validationMessage)}
+                  </div>
                 </form>
               )}
             />
@@ -171,13 +186,15 @@ describe("<Validated />", () => {
           testWrapperForBlurAndChangeOnField(
             <Validated
               validations={{
-                isRequired: input => (input ? "" : "Required")
+                isRequired
               }}
               render={({ isRequired }) => (
                 <form>
                   {isRequired.watch(<input className="formField" />)}
                   {isRequired.isValid ? "valid" : ""}
-                  <div className="error">{isRequired.validationMessage}</div>
+                  <div className="error">
+                    {JSON.stringify(isRequired.validationMessage)}
+                  </div>
                 </form>
               )}
             />
@@ -189,7 +206,7 @@ describe("<Validated />", () => {
           testWrapperForBlurAndChangeOnField(
             <Validated
               validations={{
-                isRequired: input => (input ? "" : "Required")
+                isRequired
               }}
               render={({ isRequired }) => (
                 <form>
@@ -201,7 +218,9 @@ describe("<Validated />", () => {
                     onBlur={isRequired.validateIfNonEmpty}
                   />
                   {isRequired.isValid ? "valid" : ""}
-                  <div className="error">{isRequired.validationMessage}</div>
+                  <div className="error">
+                    {JSON.stringify(isRequired.validationMessage)}
+                  </div>
                 </form>
               )}
             />
@@ -211,13 +230,15 @@ describe("<Validated />", () => {
           testWrapperForBlurAndChangeOnField(
             <Validated
               validations={{
-                isRequired: input => (input ? "" : "Required")
+                isRequired
               }}
               render={({ isRequired }) => (
                 <form>
                   {isRequired.watch(<textarea className="formField" />)}
                   {isRequired.isValid ? "valid" : ""}
-                  <div className="error">{isRequired.validationMessage}</div>
+                  <div className="error">
+                    {JSON.stringify(isRequired.validationMessage)}
+                  </div>
                 </form>
               )}
             />
@@ -238,19 +259,19 @@ describe("<Validated />", () => {
             .find(".formField")
             .simulate("change", { target: { value: "" } });
           wrapper.find(".formField").simulate("blur");
-          expect(wrapper.find(".error").text()).toBe("");
+          expect(wrapper.find(".error").text()).toBe(NO_VALIDATION_STR);
 
           // Input "spam", verify that validation didn't start yet
           wrapper
             .find(".formField")
             .simulate("change", { target: { value: inputValue } });
           expect(wrapper.find(".formField").prop("value")).toBe(inputValue);
-          expect(wrapper.find(".error").text()).toBe("");
+          expect(wrapper.find(".error").text()).toBe(NO_VALIDATION_STR);
 
           // Blur, verify that input is validated
           wrapper.find(".formField").simulate("blur");
           expect(isRequiredSpy).toBeCalledWith(inputValue);
-          expect(wrapper.find(".error").text()).toBe("");
+          expect(wrapper.find(".error").text()).toBe(NO_ERROR_STR);
 
           // Input "", validate that error shows up immediately
           wrapper
@@ -258,14 +279,14 @@ describe("<Validated />", () => {
             .simulate("change", { target: { value: "" } });
           expect(isRequiredSpy).toBeCalledWith("");
           expect(wrapper.find(".formField").prop("value")).toBe("");
-          expect(wrapper.find(".error").text()).toBe("Required");
+          expect(wrapper.find(".error").text()).toBe(ERROR_STR);
 
           // Input "spam", verify that error immediately disappears again
           wrapper
             .find(".formField")
             .simulate("change", { target: { value: inputValue } });
           expect(isRequiredSpy).toBeCalledWith(inputValue);
-          expect(wrapper.find(".error").text()).toBe("");
+          expect(wrapper.find(".error").text()).toBe(NO_ERROR_STR);
 
           expect(isRequiredSpy).toHaveBeenCalledTimes(3);
         }
@@ -273,7 +294,7 @@ describe("<Validated />", () => {
           testWrapperForBlurAndChangeOnField(
             <Validated
               validations={{
-                isRequired: input => (input ? "" : "Required")
+                isRequired
               }}
               render={({ isRequired }) => (
                 <form>
@@ -288,7 +309,9 @@ describe("<Validated />", () => {
                     <option value="spam">Spam</option>
                   </select>
                   {isRequired.isValid ? "valid" : ""}
-                  <div className="error">{isRequired.validationMessage}</div>
+                  <div className="error">
+                    {JSON.stringify(isRequired.validationMessage)}
+                  </div>
                 </form>
               )}
             />
@@ -298,7 +321,7 @@ describe("<Validated />", () => {
           testWrapperForBlurAndChangeOnField(
             <Validated
               validations={{
-                isRequired: input => (input ? "" : "Required")
+                isRequired
               }}
               render={({ isRequired }) => (
                 <form>
@@ -309,7 +332,9 @@ describe("<Validated />", () => {
                     </select>
                   )}
                   {isRequired.isValid ? "valid" : ""}
-                  <div className="error">{isRequired.validationMessage}</div>
+                  <div className="error">
+                    {JSON.stringify(isRequired.validationMessage)}
+                  </div>
                 </form>
               )}
             />
@@ -318,11 +343,12 @@ describe("<Validated />", () => {
     });
   });
 
-  // it("doesn't allow async validations to cause non-async errors to disappear", () => {});
+  // it("doesn't allow async validations to cause non-async errors to disappear", () => {
+  // });
 
   // // This should also scroll the window to the first input with an error
   it("shakes the first field that has an error, and focuses it on submit", () => {
-    const isRequired = input => (input ? "" : "Required");
+    const isRequired = input => (input ? NO_ERROR : "Required");
     ReactDOM.render(
       <Validated
         validations={{
