@@ -1,14 +1,17 @@
 import React from "react";
+import { isErrorMessage } from "./Validated";
 import {
   Input,
+  TextArea,
   AdvancedInput,
+  Select,
   Label,
   LabeledCheckboxOrRadio,
   InputMessage,
   Loading
 } from "../FormComponents";
 
-function isCheckboxOrRadioType(type) {
+function isCheckboxOrRadio(type) {
   return type === "checkbox" || type === "radio";
 }
 
@@ -24,24 +27,46 @@ const ValidatedInput = ({
   ...rest
 }) => {
   const showInputMessage = validationMessage && !isValidating;
+
+  const status = isErrorMessage(validationMessage) ? "error" : "";
+  const message =
+    validationMessage && validationMessage.hint
+      ? validationMessage.hint
+      : validationMessage;
+
+  function convertedType(type) {
+    if (isCheckboxOrRadio(type)) {
+      if (placeholder) {
+        throw new Error(
+          "'placeholder' prop is unsupported on checkbox or radio components"
+        );
+      }
+      return LabeledCheckboxOrRadio;
+    } else if (type === "textarea") {
+      // Technically textarea is not an input type, but we'll pretend
+      // The rationale is that it keeps the entire API slightly more consistent
+      // TODO: make an AdvancedTextArea to handle valid state and loading
+      return TextArea;
+    } else if (type === "select") {
+      return Select;
+    }
+    return AdvancedInput;
+  }
+
   return (
     <div className={shouldShake ? "shake" : null}>
-      {!placeholder && !isCheckboxOrRadioType(type) && <Label>{label}</Label>}
-      {!isCheckboxOrRadioType(type) && (
-        <AdvancedInput
-          status={validationMessage && "error"}
-          placeholder={placeholder}
-          isValid={isValid && !validationMessage}
-          isValidating={isValidating}
-          aria-invalid={showInputMessage}
-          {...rest}
-        />
-      )}
-      {isCheckboxOrRadioType(type) && (
-        <LabeledCheckboxOrRadio type={type} label={label} {...rest} />
-      )}
+      {!isCheckboxOrRadio(type) && !placeholder && <Label>{label}</Label>}
+      {React.createElement(convertedType(type), {
+        status,
+        placeholder,
+        isValid,
+        isValidating,
+        "aria-invalid": !isValid,
+        type,
+        ...rest
+      })}
       {showInputMessage && (
-        <InputMessage status="error">{validationMessage}</InputMessage>
+        <InputMessage status={status}>{message}</InputMessage>
       )}
     </div>
   );
