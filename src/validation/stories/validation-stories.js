@@ -10,6 +10,7 @@ import RegisterForm from "./RegisterForm";
 import LoginForm from "./LoginForm";
 import RadioOptions from "./RadioOptions";
 import OptionalInput from "./OptionalInput";
+import NoteForm from "./NoteForm";
 import Validated from "../Validated";
 
 storiesOf("Forms", module)
@@ -24,6 +25,7 @@ storiesOf("Forms", module)
   .add("OptionalInput", () => <OptionalInput />)
   .add("LoginForm", () => <LoginForm />)
   .add("RadioOptions", () => <RadioOptions />)
+  .add("NoteForm", () => <NoteForm />)
   .add("refs on <input />", () => (
     <div>
       <Validated

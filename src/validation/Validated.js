@@ -12,6 +12,10 @@ const EMPTY_VALUE = "";
 const NO_ERROR = "";
 const NO_VALIDATION = null; // TODO: rename to UNTOUCHED?
 
+export const isHint = message => !!message.hint;
+
+export const isErrorMessage = message => !!message && !isHint(message);
+
 // return new function that takes an argument and passes it down to all functions
 const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
@@ -94,7 +98,6 @@ export default class Validated extends Component {
       `);
       return;
     }
-    this._validateAll = this._validateAll.bind(this);
     this._refs = mapValidations(this.props.validations, () =>
       React.createRef()
     );
@@ -121,7 +124,7 @@ export default class Validated extends Component {
       _keyFocused: null,
       _shouldShake: mapValidations(this.props.validations, () => false)
     });
-    const keyToFocus = findKey(messages, message => !!message);
+    const keyToFocus = findKey(messages, isErrorMessage);
     const elementToFocus = this._refs[keyToFocus];
     elementToFocus && elementToFocus.current && elementToFocus.current.focus();
     this.setState(
@@ -157,7 +160,8 @@ export default class Validated extends Component {
           _messages: { ...state._messages, [key]: message },
           _shouldShake: {
             ...state._shouldShake,
-            [key]: !!message && !state._messages[key]
+            [key]:
+              isErrorMessage(message) && !isErrorMessage(state._messages[key])
           }
         }),
         () =>
@@ -303,7 +307,7 @@ export default class Validated extends Component {
     const customProps = {
       validationMessage: this.state._messages[key],
       shouldShake: this.state._shouldShake[key],
-      isValid: this.state._messages[key] === NO_ERROR
+      isValid: !isErrorMessage(this.state._messages[key])
     };
 
     return {
