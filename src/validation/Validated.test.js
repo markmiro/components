@@ -386,7 +386,7 @@ describe("<Validated />", () => {
   //   // Fields are validated
   //   // Checkmark shows on valid fields
   //   // Error messages show on bad fields
-  //   // Mark fields at touched (in other words, autofilled fields should have either be in success or error state)
+  //   // Mark fields as touched (in other words, autofilled fields should have either be in success or error state)
   // });
 
   // // Ex: "You have 5/240 characters left"
