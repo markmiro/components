@@ -302,7 +302,9 @@ export default class Validated extends Component {
     const customProps = {
       validationMessage: this.state._messages[key],
       shouldShake: this.state._shouldShake[key],
-      isValid: !isErrorMessage(this.state._messages[key])
+      isValid:
+        !isErrorMessage(this.state._messages[key]) &&
+        this.state._messages[key] !== NO_VALIDATION
     };
 
     return {
