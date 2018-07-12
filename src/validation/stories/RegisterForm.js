@@ -53,7 +53,7 @@ class RegisterForm extends React.Component {
       ) => (
         <VerticalSpacer space="1em">
           <h1>Create Account</h1>
-          {username.watchFull(<ValidatedInput label="Username" />)}
+          {username.watchFull(<ValidatedInput label="Username" autoFocus />)}
           {email.watchFull(
             <ValidatedInput
               label="Email"
