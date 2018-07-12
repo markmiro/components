@@ -59,7 +59,6 @@ const ValidatedInput = ({
         placeholder,
         isValid,
         isValidating,
-        "aria-invalid": !isValid,
         type,
         label,
         ...rest
