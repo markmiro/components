@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { isEqual, omit, findKey } from "lodash";
+import { omit, findKey } from "lodash";
 import {
   areAllValid,
   normalizeValidations,
@@ -9,7 +9,6 @@ import {
 } from "./validationRunner";
 
 const EMPTY_VALUE = "";
-const NO_ERROR = "";
 const NO_VALIDATION = null; // TODO: rename to UNTOUCHED?
 
 export const isHint = message => !!message.hint;
@@ -85,7 +84,6 @@ export default class Validated extends Component {
           render={() => <div>Hello</div>}
         />
       `);
-      return;
     }
     if (!this.props.validations) {
       throw new Error(`
@@ -96,7 +94,6 @@ export default class Validated extends Component {
           render={({ over18 }) => <div>Hello</div>}
         />
       `);
-      return;
     }
     this._refs = mapValidations(this.props.validations, () =>
       React.createRef()
@@ -176,8 +173,6 @@ export default class Validated extends Component {
             500
           )
       );
-
-    const clear = () => setMessage(NO_VALIDATION);
 
     const validateField = () => {
       console.log("validateField()");

@@ -1,14 +1,12 @@
 import React from "react";
 import { isErrorMessage } from "./Validated";
 import {
-  Input,
   TextArea,
   AdvancedInput,
   Select,
   Label,
   LabeledCheckboxOrRadio,
-  InputMessage,
-  Loading
+  InputMessage
 } from "../FormComponents";
 
 function isCheckboxOrRadio(type) {

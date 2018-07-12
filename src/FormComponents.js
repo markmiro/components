@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 import { initial, last } from "lodash";
-import { Motion, spring, presets } from "react-motion";
+import { Motion, spring } from "react-motion";
 import chroma from "chroma-js";
 
 const BORDER_RADIUS = "0.3rem";

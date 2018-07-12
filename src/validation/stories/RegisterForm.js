@@ -1,13 +1,10 @@
 import React from "react";
-import validator from "validator";
 import { debounce } from "lodash";
 import {
   Button,
   ButtonGroupH,
   ButtonSuperPrimary,
-  Label,
-  VerticalSpacer,
-  InputMessage
+  VerticalSpacer
 } from "../../FormComponents";
 import { trace } from "../../globals";
 import { ValidatedForm } from "../Validated";
