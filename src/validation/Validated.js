@@ -339,7 +339,7 @@ export const ValidatedForm = ({ onSubmit, render, ...props }) => (
     {...props}
     render={(fieldHelpers, generalHelpers) => (
       <form
-        novalidate // because we're doing custom validation
+        noValidate // because we're doing custom validation
         onSubmit={e => {
           e.preventDefault();
           generalHelpers.validateAll((fields, messages, isValid) => {
