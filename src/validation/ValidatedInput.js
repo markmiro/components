@@ -61,6 +61,7 @@ const ValidatedInput = ({
         isValidating,
         "aria-invalid": !isValid,
         type,
+        label,
         ...rest
       })}
       {showInputMessage && (
