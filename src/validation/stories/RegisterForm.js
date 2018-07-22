@@ -76,6 +76,7 @@ class RegisterForm extends React.Component {
           {confirmEmail.watchFull(<ValidatedInput label="Confirm Email" />)}
           {password.watchFull(
             <ValidatedInput
+              type="password"
               label="Password"
               validationMessage={
                 password.validationMessage &&
