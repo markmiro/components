@@ -34,6 +34,8 @@ class RegisterForm extends React.Component {
           validations.required,
           value => validations.confirmEmail(state.email, value)
         ],
+        ccName: () => {},
+        ccNumber: () => {},
         password: [
           value => [validations.required(value)],
           validations.password
@@ -48,7 +50,15 @@ class RegisterForm extends React.Component {
         isValid && alert(JSON.stringify(fields, null, "  "))
       }
       render={(
-        { username, email, confirmEmail, password, acceptTerms },
+        {
+          username,
+          email,
+          confirmEmail,
+          password,
+          ccName,
+          ccNumber,
+          acceptTerms
+        },
         { reset }
       ) => (
         <VerticalSpacer space="1em">
@@ -84,6 +94,15 @@ class RegisterForm extends React.Component {
                   .filter(message => !!message)
                   .map(message => <div key={message}>{message}</div>)
               }
+            />
+          )}
+          {ccName.watchFull(
+            <ValidatedInput autoComplete="cc-name" label="Name on Card" />
+          )}
+          {ccNumber.watchFull(
+            <ValidatedInput
+              autoComplete="cc-number"
+              label="Credit Card Number"
             />
           )}
           {acceptTerms.watchFull(
