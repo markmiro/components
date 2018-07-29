@@ -25,3 +25,7 @@ export function throttleEvent(type, name, obj) {
   };
   obj.addEventListener(type, func);
 }
+
+export function isBrowser() {
+  return typeof window !== "undefined" && window.document;
+}
