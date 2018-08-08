@@ -392,8 +392,30 @@ describe("<Validated />", () => {
   // // Ex: "You have 5/240 characters left"
   // it("shouldn't interfere with having a helpful note be displayed", () => {});
 
-  // // Ex: "sdf.sdf" is not a valid email
-  // it("can display the field value in the error message", () => {});
+  it("can display the field value in the error message", () => {
+    const isBlank = foobar => (foobar ? `${foobar} is not blank` : "");
+    const reactElement = (
+      <Validated
+        validations={{
+          foobar: isBlank
+        }}
+        render={({ foobar }) => (
+          <form>
+            {foobar.watch(<input className="formField" />)}
+            <div className="error">{foobar.validationMessage}</div>
+          </form>
+        )}
+      />
+    );
+    const wrapper = mount(reactElement);
+    const inputValue = "blabla";
+    wrapper
+      .find(".formField")
+      .simulate("change", { target: { value: inputValue } });
+    wrapper.find(".formField").simulate("blur");
+    expect(wrapper.find(".formField").prop("value")).toBe(inputValue);
+    expect(wrapper.find(".error").text()).toBe(inputValue + " is not blank");
+  });
 
   // // Ex: input same email twice
   // it("should work with dependent fields", () => {});
