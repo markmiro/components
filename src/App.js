@@ -1,9 +1,14 @@
 import React, { Component } from "react";
-import Resume from "./Resume";
+import RegisterForm from "./validation/stories/RegisterForm";
+import { PageCard } from "./FormComponents";
 
 class App extends Component {
   render() {
-    return <Resume />;
+    return (
+      <PageCard>
+        <RegisterForm />
+      </PageCard>
+    );
   }
 }
 
