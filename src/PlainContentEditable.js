@@ -21,6 +21,7 @@ function toEditorEvent(event) {
 
   const comboString = getKeyComboString(event);
 
+  // Prevent bold and italic text
   const isBlockedKeyCombo = () => ["Cmd+b", "Cmd+i"].includes(comboString);
 
   return { comboString, isBlockedKeyCombo, isModifierKey };
@@ -56,7 +57,11 @@ export default class PlainContentEditable extends Component {
   handleInputKeyDown = e => {
     const editorEvent = toEditorEvent(e);
     // console.log("Key combo", editorEvent.comboString);
-    if (editorEvent.isBlockedKeyCombo() || e.key === "Enter") {
+    if (
+      editorEvent.isBlockedKeyCombo() ||
+      e.key === "Enter" ||
+      e.key === "Tab"
+    ) {
       // console.log("prevent");
       e.preventDefault();
     }
@@ -71,13 +76,16 @@ export default class PlainContentEditable extends Component {
   render() {
     // NOTE: intentionally not using `onInput` and onChange`.
     // They're used elsewhere.
-    const { onInput, onChange, value, ...rest } = this.props;
+    const { onInput, onChange, value, innerRef, ...rest } = this.props;
     return (
       <div
         contentEditable
         onKeyDown={this.handleInputKeyDown}
         onPaste={this.handlePaste}
-        ref={el => (this.el = el)}
+        ref={el => {
+          this.el = el;
+          innerRef(el);
+        }}
         dangerouslySetInnerHTML={{ __html: value }}
         {...rest}
       />

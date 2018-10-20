@@ -6,6 +6,7 @@ import CodeEditor from "../CodeEditor";
 import SideScroller from "../SideScroller";
 import { Tree } from "../Tree";
 import Counter from "../Counter";
+import BulletList from "../BulletList";
 
 class ResponsiveSelectExample extends React.Component {
   state = {
@@ -65,6 +66,11 @@ storiesOf("Components", module)
   .add("Tree", () => (
     <Padded>
       <Tree />
+    </Padded>
+  ))
+  .add("BulletList", () => (
+    <Padded>
+      <BulletList />
     </Padded>
   ))
   .add("Counter", () => <Counter />)
