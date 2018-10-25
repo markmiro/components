@@ -1,14 +1,15 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import { uniqueId, takeWhile, takeRightWhile } from "lodash";
+import { uniqueId, takeWhile, takeRightWhile, values } from "lodash";
 import PlainContentEditable from "./PlainContentEditable";
+import NodeTree from "./NodeTree";
 
 const Box = styled.span`
   &:hover {
     outline: 1px solid #0000ff22;
   }
   &:focus-within {
-    background: #0000ff11;
+    // background: #0000ff11;
   }
 `;
 
@@ -49,11 +50,9 @@ class Bullet extends Component {
           onChange={text => this.setState({ text })}
           onInput={e => {
             console.log(e.shiftKey && "SHIFT", e.key);
-            e.key === "Backspace" &&
-              !this.state.text &&
-              this.props.remove(this.props.id);
-            e.key === "ArrowUp" && this.props.cursorUp(this.props.id);
-            e.key === "ArrowDown" && this.props.cursorDown(this.props.id);
+            e.key === "Backspace" && !this.state.text && this.props.remove();
+            e.key === "ArrowUp" && this.props.cursorUp();
+            e.key === "ArrowDown" && this.props.cursorDown();
             if (e.shiftKey && e.key === "Tab") {
               this.props.unindent(this.props.id);
             } else if (e.key === "Tab") {
@@ -72,169 +71,122 @@ class BulletList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      nodes: [
+      nodes: new NodeTree([
         {
-          id: uniqueId("node"),
-          text: "Hello",
-          indentLevel: 0
+          label: "Hello"
         },
         {
-          id: uniqueId("node"),
-          text: "There",
-          indentLevel: 0
+          label: "There"
         }
-      ]
+      ])
     };
     this.ref = React.createRef();
   }
   componentDidMount() {
-    this.ref.current.addEventListener("drop", e => {
-      console.log("drag end", e);
-    });
-    // TODO: cleanup listener on component unmount
-    document.addEventListener("mouseup", e => {
-      this.setState({ isMouseDown: false });
-    });
+    document.addEventListener("mouseup", this.handleMouseUp);
   }
+  componentWillUnmount() {
+    document.removeEventListener("mouseup", this.handleMouseUp);
+  }
+  handleMouseUp = e => {
+    this.setState({ isMouseDown: false });
+  };
   indent = id => {
-    const node = this.state.nodes.find(node => node.id === id);
-    this.setState({
-      nodes: [
-        ...takeWhile(this.state.nodes, node => node.id !== id),
-        {
-          ...node,
-          indentLevel: (node.indentLevel || 0) + 1
-        },
-        ...takeRightWhile(this.state.nodes, node => node.id !== id)
-      ]
-    });
+    this.state.nodes.indentSelected();
+    this.forceUpdate();
   };
   unindent = id => {
-    console.log("unindent");
-    const node = this.state.nodes.find(node => node.id === id);
-    this.setState({
-      nodes: [
-        ...takeWhile(this.state.nodes, node => node.id !== id),
-        {
-          ...node,
-          indentLevel: Math.max(0, (node.indentLevel || 0) - 1)
-        },
-        ...takeRightWhile(this.state.nodes, node => node.id !== id)
-      ]
-    });
+    this.state.nodes.unindentSelected();
+    this.forceUpdate();
   };
-  remove = id => {
-    if (this.state.nodes.length === 0) return;
-    const node = this.state.nodes.find(node => node.id === id);
-    const index = this.state.nodes.indexOf(node);
-    this.setState(
-      {
-        nodes: [
-          ...takeWhile(this.state.nodes, node => node.id !== id),
-          ...takeRightWhile(this.state.nodes, node => node.id !== id)
-        ]
-      },
-      () => {
-        console.log("remove index", index);
-        const indexClipped = Math.max(
-          Math.min(index - 1, this.state.nodes.length - 1),
-          0
-        );
-        this.cursorTo(this.state.nodes[indexClipped].id, 0);
-      }
-    );
-    // this.cursorTo(index, 0);
+  removeSelected = () => {
+    const { nodes } = this.state;
+    let id = nodes.getNodeAboveSelection().id;
+    nodes.removeSelected();
+    if (!nodes.getNodeAt(id)) id = nodes.getFirstNode().id;
+    this.focus(id);
   };
   focus = id => {
-    setTimeout(() => {
-      const range = document.createRange();
-      const sel = window.getSelection();
-      range.setStart(this.ref.current.querySelector(`[data-id=${id}]`), 0);
-      range.collapse(true);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }, 0);
-  };
-  cursorTo = (id, direction) => {
-    console.log("cursor to");
-    const node = this.state.nodes.find(node => node.id === id);
-    const index = this.state.nodes.indexOf(node) + direction;
-    const nextId = this.state.nodes[index].id;
-    this.focus(nextId);
-    this.setState({
-      selectionStartIndex: null,
-      selectionEndIndex: null
+    this.state.nodes.deselectAll();
+    this.state.nodes.select({ fromId: id, toId: id });
+    this.forceUpdate(() => {
+      setTimeout(() => {
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.setStart(this.ref.current.querySelector(`[data-id=${id}]`), 0);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }, 0);
     });
   };
+  cursorTo = direction => {
+    const { nodes } = this.state;
+    if (direction === "up") {
+      this.focus(nodes.getNodeAboveSelection().id);
+    } else if (direction === "down") {
+      this.focus(nodes.getNodeBelowSelection().id);
+    } else {
+      throw new Error("Direction either not provided or invalid");
+    }
+  };
   addNodeBelow = id => {
-    const currentNode = this.state.nodes.find(node => node.id === id);
-    const nextId = uniqueId("node");
-    this.setState(
-      {
-        selectionStartIndex: null,
-        selectionEndIndex: null,
-        nodes: [
-          ...takeWhile(this.state.nodes, node => node.id !== id),
-          currentNode,
-          {
-            id: nextId,
-            text: "",
-            indentLevel: currentNode.indentLevel
-          },
-          ...takeRightWhile(this.state.nodes, node => node.id !== id)
-        ]
-      },
-      () => this.focus(nextId)
-    );
+    const newNode = this.state.nodes.addBelow({ id });
+    this.focus(newNode.id);
   };
   render() {
     return (
       <div
-        style={{ outline: this.state.isMouseDown && "1px solid blue" }}
         ref={this.ref}
         onMouseDown={e => {
           const id = document.elementFromPoint(e.clientX, e.clientY).dataset.id;
-          const node = this.state.nodes.find(node => node.id === id);
-          const selectionStartIndex = this.state.nodes.indexOf(node);
+          this.state.nodes.select({ fromId: id, toId: id });
           this.setState({
-            isMouseDown: true,
-            selectionStartIndex,
-            selectionEndIndex: selectionStartIndex
+            isMouseDown: true
           });
         }}
         onMouseMove={e => {
           if (this.state.isMouseDown) {
             const id = document.elementFromPoint(e.clientX, e.clientY).dataset
               .id;
-            const node = this.state.nodes.find(node => node.id === id);
-            const selectionEndIndex = this.state.nodes.indexOf(node);
-            this.setState({
-              selectionEndIndex
-            });
+            this.state.nodes.select({ toId: id });
+            if (
+              this.state.nodes.selectionStartId !==
+              this.state.nodes.selectionEndId
+            ) {
+              window.getSelection().removeAllRanges();
+            }
+            this.forceUpdate();
+          }
+        }}
+        onKeyUp={e => {
+          if (
+            e.key === "Backspace" &&
+            this.state.nodes.selectionStartId !==
+              this.state.nodes.selectionEndId
+          ) {
+            this.removeSelected();
           }
         }}
       >
-        {this.state.nodes.map(({ id, text, indentLevel }, i) => (
-          <Bullet
-            key={id}
-            id={id}
-            isSelected={
-              this.state.selectionStartIndex !== null &&
-              this.state.selectionEndIndex !== null &&
-              i >= this.state.selectionStartIndex &&
-              i <= this.state.selectionEndIndex
-            }
-            addNodeBelow={this.addNodeBelow}
-            remove={this.remove}
-            indent={this.indent}
-            unindent={this.unindent}
-            cursorUp={id => this.cursorTo(id, -1)}
-            cursorDown={id => this.cursorTo(id, 1)}
-            indentLevel={indentLevel}
-          >
-            {text}
-          </Bullet>
-        ))}
+        {values(this.state.nodes.tree).map(
+          ({ id, label, isSelected, indentLevel }, i) => (
+            <Bullet
+              key={id}
+              id={id}
+              isSelected={isSelected}
+              addNodeBelow={this.addNodeBelow}
+              remove={this.removeSelected}
+              indent={this.indent}
+              unindent={this.unindent}
+              cursorUp={() => this.cursorTo("up")}
+              cursorDown={() => this.cursorTo("down")}
+              indentLevel={indentLevel}
+            >
+              {label}
+            </Bullet>
+          )
+        )}
       </div>
     );
   }

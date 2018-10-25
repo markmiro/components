@@ -46,42 +46,6 @@ test("constructor with array of nodes", () => {
   });
 });
 
-// test("constructor with nested nodes", () => {
-//   expect(
-//     new NodeTree({
-//       node1: {
-//         id: "node1",
-//         label: "One"
-//       },
-//       node2: {
-//         id: "node2",
-//         label: "Two",
-//         children: {
-//           node3: {
-//             id: "node3",
-//             label: "Two"
-//           }
-//         }
-//       }
-//     }).tree
-//   ).toMatchObject({
-//     node1: {
-//       id: "node1",
-//       label: "One"
-//     },
-//     node2: {
-//       id: "node2",
-//       label: "Two",
-//       children: {
-//         node3: {
-//           id: "node3",
-//           label: "Two"
-//         }
-//       }
-//     }
-//   });
-// });
-
 test("add node", () => {
   let t = new NodeTree();
   t.addBelow({ id: null, node: { label: "Something" } });
@@ -189,6 +153,21 @@ test("deselect ids", () => {
   expect(t.tree).toMatchObject({
     node1: { id: "node1", isSelected: false },
     node2: { id: "node2", isSelected: false }
+  });
+});
+
+test("remove selected", () => {
+  let t = new NodeTree([
+    { label: "One", id: "node1" },
+    { label: "Two", id: "node2" },
+    { label: "Three", id: "node3" },
+    { label: "Four", id: "node4" }
+  ]);
+  t.select({ fromId: "node1", toId: "node2" });
+  t.removeSelected();
+  expect(t.tree).toMatchObject({
+    node3: { id: "node3" },
+    node4: { id: "node4" }
   });
 });
 

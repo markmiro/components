@@ -7,7 +7,8 @@ import {
   takeWhile,
   takeRightWhile,
   values,
-  last
+  last,
+  minBy
 } from "lodash";
 
 const nodeDefaults = () => ({
@@ -15,7 +16,7 @@ const nodeDefaults = () => ({
   isCollapsed: false,
   isSelected: false,
   id: uniqueId("node"),
-  children: {},
+  indentLevel: 0,
   extras: {}
 });
 
@@ -52,8 +53,10 @@ export default class NodeTree {
     }
     */
   }
-  // TODO: delete selection
   removeSelected() {
+    this.selectionStartId = null;
+    this.selectionEndId = null;
+    this.isFromIndexHigher = true;
     const notTargetNode = node => !node.isSelected;
     const list = [
       ...takeWhile(values(this.tree), notTargetNode),
@@ -63,11 +66,13 @@ export default class NodeTree {
   }
   // Adds bullet below or adds inside based on whether it already has some nodes indented
   addBelow(params) {
-    const node = params.node;
+    this.deselectAll();
+    const node = params.node || {};
     const keys = Object.keys(this.tree);
     const newNode = {
       ...nodeDefaults(),
-      ...node
+      ...node,
+      isSelected: true
     };
     if (keys.length === 0) {
       this.tree[newNode.id] = newNode;
@@ -83,10 +88,12 @@ export default class NodeTree {
       console.info(list);
       this.tree = keyBy(list, "id");
     }
+    return newNode;
   }
   // expand(id) {}
   // collapse(id) {}
-  select({ fromId, toId }) {
+  // TODO: make this.isSelected(id) function instead?
+  select({ fromId = this.selectionStartId, toId = this.selectionEndId }) {
     const indexRange = () => {
       const fromNode = this.tree[fromId];
       const toNode = this.tree[toId];
@@ -95,24 +102,76 @@ export default class NodeTree {
       const toIndex = list.indexOf(toNode);
       const minIndex = Math.min(fromIndex, toIndex);
       const maxIndex = Math.max(fromIndex, toIndex);
-      return { minIndex, maxIndex };
+      const isFromIndexHigher = fromIndex < toIndex;
+      return { minIndex, maxIndex, isFromIndexHigher };
     };
-    const { minIndex, maxIndex } = indexRange(fromId, toId);
+    const { minIndex, maxIndex, isFromIndexHigher } = indexRange(fromId, toId);
+    this.selectionStartId = fromId;
+    this.selectionEndId = toId;
+    this.isFromIndexHigher = isFromIndexHigher;
     values(this.tree).forEach((node, i) => {
       node.isSelected = i >= minIndex && i <= maxIndex;
     });
   }
   deselectAll() {
+    this.selectionStartId = null;
+    this.selectionEndId = null;
+    this.isFromIndexHigher = true;
     values(this.tree).forEach((node, i) => {
       node.isSelected = false;
     });
   }
-  indentSelected() {}
-  unindentSelected() {}
-  // getParentNode(id) {}
+  getNodeAboveSelection() {
+    const id = this.isFromIndexHigher
+      ? this.selectionStartId
+      : this.selectionEndId;
+    return this.getNodeAbove(id);
+  }
+  getNodeBelowSelection() {
+    const id = this.isFromIndexHigher
+      ? this.selectionEndId
+      : this.selectionStartId;
+    return this.getNodeBelow(id);
+  }
+  indentSelected() {
+    const list = values(this.tree);
+    if (list[0].isSelected) return; // Don't indent first item
+    const parentIndentLevel = this.getNodeAboveSelection().indentLevel;
+    const minSelectedIndentLevel = minBy(
+      list.filter(node => node.isSelected),
+      node => node.indentLevel
+    ).indentLevel;
+    list.forEach((node, i) => {
+      if (node.isSelected) {
+        node.indentLevel =
+          node.indentLevel - minSelectedIndentLevel + parentIndentLevel + 1;
+      }
+    });
+  }
+  unindentSelected() {
+    values(this.tree).forEach((node, i) => {
+      if (node.isSelected) {
+        node.indentLevel = Math.max(0, node.indentLevel - 1);
+      }
+    });
+  }
   getNodeAt(id) {
     return this.tree[id];
   }
-  getNodeAbove(id) {}
-  getNodeBelow(id) {}
+  getFirstNode() {
+    const list = values(this.tree);
+    return list[0];
+  }
+  getNodeAbove(id) {
+    const node = this.tree[id];
+    const list = values(this.tree);
+    const index = Math.max(list.indexOf(node) - 1, 0);
+    return list[index];
+  }
+  getNodeBelow(id) {
+    const node = this.tree[id];
+    const list = values(this.tree);
+    const index = Math.min(list.indexOf(node) + 1, list.length - 1);
+    return list[index];
+  }
 }
