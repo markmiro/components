@@ -5,10 +5,10 @@ import PlainContentEditable from "./PlainContentEditable";
 
 const Box = styled.span`
   &:hover {
-    background: #f8f8f8;
+    outline: 1px solid #0000ff22;
   }
   &:focus-within {
-    background: #eee;
+    background: #0000ff11;
   }
 `;
 
@@ -33,9 +33,11 @@ class Bullet extends Component {
         title={this.props.id}
         style={{
           display: "flex",
-          marginLeft: `${this.props.indentLevel * 2}em`
+          marginLeft: `${this.props.indentLevel * 2}em`,
+          background: this.props.isSelected && "#0000ff11"
         }}
       >
+        {this.props.isCollapsed ? "+" : "−"}
         <Dot />
         <PlainContentEditable
           innerRef={el => {
@@ -84,6 +86,15 @@ class BulletList extends Component {
       ]
     };
     this.ref = React.createRef();
+  }
+  componentDidMount() {
+    this.ref.current.addEventListener("drop", e => {
+      console.log("drag end", e);
+    });
+    // TODO: cleanup listener on component unmount
+    document.addEventListener("mouseup", e => {
+      this.setState({ isMouseDown: false });
+    });
   }
   indent = id => {
     const node = this.state.nodes.find(node => node.id === id);
@@ -150,12 +161,18 @@ class BulletList extends Component {
     const index = this.state.nodes.indexOf(node) + direction;
     const nextId = this.state.nodes[index].id;
     this.focus(nextId);
+    this.setState({
+      selectionStartIndex: null,
+      selectionEndIndex: null
+    });
   };
   addNodeBelow = id => {
     const currentNode = this.state.nodes.find(node => node.id === id);
     const nextId = uniqueId("node");
     this.setState(
       {
+        selectionStartIndex: null,
+        selectionEndIndex: null,
         nodes: [
           ...takeWhile(this.state.nodes, node => node.id !== id),
           currentNode,
@@ -172,12 +189,41 @@ class BulletList extends Component {
   };
   render() {
     return (
-      <div ref={this.ref}>
-        <b>Hello</b>
-        {this.state.nodes.map(({ id, text, indentLevel }) => (
+      <div
+        style={{ outline: this.state.isMouseDown && "1px solid blue" }}
+        ref={this.ref}
+        onMouseDown={e => {
+          const id = document.elementFromPoint(e.clientX, e.clientY).dataset.id;
+          const node = this.state.nodes.find(node => node.id === id);
+          const selectionStartIndex = this.state.nodes.indexOf(node);
+          this.setState({
+            isMouseDown: true,
+            selectionStartIndex,
+            selectionEndIndex: selectionStartIndex
+          });
+        }}
+        onMouseMove={e => {
+          if (this.state.isMouseDown) {
+            const id = document.elementFromPoint(e.clientX, e.clientY).dataset
+              .id;
+            const node = this.state.nodes.find(node => node.id === id);
+            const selectionEndIndex = this.state.nodes.indexOf(node);
+            this.setState({
+              selectionEndIndex
+            });
+          }
+        }}
+      >
+        {this.state.nodes.map(({ id, text, indentLevel }, i) => (
           <Bullet
             key={id}
             id={id}
+            isSelected={
+              this.state.selectionStartIndex !== null &&
+              this.state.selectionEndIndex !== null &&
+              i >= this.state.selectionStartIndex &&
+              i <= this.state.selectionEndIndex
+            }
             addNodeBelow={this.addNodeBelow}
             remove={this.remove}
             indent={this.indent}
