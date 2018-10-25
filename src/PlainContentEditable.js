@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 
+// TODO: add undo support
+
 // https://css-tricks.com/snippets/javascript/test-mac-pc-javascript/
 const isCmdKeyDown = e => {
   const isMac = () => navigator.userAgent.indexOf("Mac OS X") > -1;
@@ -73,6 +75,13 @@ export default class PlainContentEditable extends Component {
     const pasteText = e.clipboardData.getData("text/plain");
     document.execCommand("insertHTML", false, pasteText);
   };
+  handleDrop = e => {
+    // https://stackoverflow.com/a/12028136
+    e.preventDefault();
+    const pasteText = e.dataTransfer.getData("text");
+    this.el.focus(); // otherwise it doesn't know where to paste to
+    document.execCommand("insertText", false, pasteText);
+  };
   render() {
     // NOTE: intentionally not using `onInput` and onChange`.
     // They're used elsewhere.
@@ -82,6 +91,7 @@ export default class PlainContentEditable extends Component {
         contentEditable
         onKeyDown={this.handleInputKeyDown}
         onPaste={this.handlePaste}
+        onDrop={this.handleDrop}
         ref={el => {
           this.el = el;
           innerRef(el);
