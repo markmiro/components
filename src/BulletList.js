@@ -20,48 +20,53 @@ const Dot = styled.span`
   }
 `;
 
-class Bullet extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      text: this.props.children
-    };
-  }
-  render() {
-    const { id } = this.props;
-    return (
-      <Box
-        title={this.props.id}
-        style={{
-          display: "flex",
-          marginLeft: `${this.props.indentLevel * 2}em`,
-          background: this.props.isSelected && "#0000ff11"
+function Bullet(props) {
+  const {
+    id,
+    label,
+    indentLevel,
+    isSelected,
+    isCollapsed,
+    onChange,
+    remove,
+    cursorUp,
+    cursorDown,
+    unindent,
+    indent,
+    addNodeBelow
+  } = props;
+  return (
+    <Box
+      title={id}
+      style={{
+        display: "flex",
+        marginLeft: `${indentLevel * 2}em`,
+        background: isSelected && "#0000ff11"
+      }}
+    >
+      {isCollapsed ? "+" : "−"}
+      <Dot />
+      <PlainContentEditable
+        className="no-focus-box"
+        data-id={id}
+        value={label}
+        onChange={onChange}
+        onInput={e => {
+          console.log(e.shiftKey && "SHIFT", e.key);
+          e.key === "Backspace" && !this.state.text && remove();
+          e.key === "ArrowUp" && cursorUp();
+          e.key === "ArrowDown" && cursorDown();
+          if (e.shiftKey && e.key === "Tab") {
+            unindent(id);
+          } else if (e.key === "Tab") {
+            indent(id);
+          }
+          e.key === "Enter" && addNodeBelow(id);
         }}
-      >
-        {this.props.isCollapsed ? "+" : "−"}
-        <Dot />
-        <PlainContentEditable
-          className="no-focus-box"
-          data-id={id}
-          value={this.state.text}
-          onChange={this.props.onChange}
-          onInput={e => {
-            console.log(e.shiftKey && "SHIFT", e.key);
-            e.key === "Backspace" && !this.state.text && this.props.remove();
-            e.key === "ArrowUp" && this.props.cursorUp();
-            e.key === "ArrowDown" && this.props.cursorDown();
-            if (e.shiftKey && e.key === "Tab") {
-              this.props.unindent(this.props.id);
-            } else if (e.key === "Tab") {
-              this.props.indent(this.props.id);
-            }
-            e.key === "Enter" && this.props.addNodeBelow(this.props.id);
-          }}
-          style={{ width: "100%" }}
-        />
-      </Box>
-    );
-  }
+        style={{ width: "100%" }}
+      />
+    </Box>
+  );
 }
 
 class BulletList extends Component {
@@ -179,6 +184,7 @@ class BulletList extends Component {
             <Bullet
               key={id}
               id={id}
+              label={label}
               onChange={text => this.handleTextChange(text, id)}
               isSelected={isSelected}
               addNodeBelow={this.addNodeBelow}
@@ -188,9 +194,7 @@ class BulletList extends Component {
               cursorUp={() => this.cursorTo("up")}
               cursorDown={() => this.cursorTo("down")}
               indentLevel={indentLevel}
-            >
-              {label}
-            </Bullet>
+            />
           )
         )}
       </div>
