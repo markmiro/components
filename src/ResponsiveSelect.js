@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import { first, last } from "lodash";
-import { throttleEvent } from "./globals";
+import { first, last, debounce } from "lodash";
 import {
   Select,
   Button,
@@ -21,8 +20,6 @@ const hiddenStyles = {
   transitionProperty: "none"
 };
 
-throttleEvent("resize", "optimizedResize");
-
 export const ResponsiveOption = ({ children }) => <div>{children}</div>;
 
 export default class ResponsiveSelect extends Component {
@@ -32,19 +29,25 @@ export default class ResponsiveSelect extends Component {
 
   checkSize = () => {
     if (!this.props.children) return;
-    const allFit = Array.of(...this.buttonGroup.children).every(
-      child => child.scrollWidth <= child.clientWidth
-    );
+    const allFit = Array.of(...this.buttonGroup.children).every(child => {
+      const contentInsideTheButton = child.children[0];
+      return (
+        contentInsideTheButton.scrollWidth <= contentInsideTheButton.clientWidth
+      );
+    });
     this.setState({ goVertical: !allFit });
   };
+  checkSizeDebounced = debounce(this.checkSize, 50);
+
+  compo;
 
   componentDidMount() {
-    window.addEventListener("optimizedResize", this.checkSize);
     this.checkSize();
+    window.addEventListener("resize", this.checkSizeDebounced);
   }
 
   componentWillUnmount() {
-    window.removeEventListener("optimizedResize", this.checkSize);
+    window.removeEventListener("resize", this.checkSizeDebounced);
   }
 
   render() {
@@ -106,17 +109,27 @@ export default class ResponsiveSelect extends Component {
           ref={el => {
             this.buttonGroup = el;
           }}
+          role="radiogroup"
           style={goVertical ? hiddenStyles : {}}
         >
-          {React.Children.map(children, child => (
-            <Button
-              {...child.props}
-              onClick={() => onChange(child.props.value)}
-              selected={
-                JSON.stringify(child.props.value) === JSON.stringify(value)
-              }
-            />
-          ))}
+          {React.Children.map(children, child => {
+            const isSelected =
+              JSON.stringify(child.props.value) === JSON.stringify(value);
+            return (
+              <Button
+                {...child.props}
+                onClick={() => onChange(child.props.value)}
+                tabindex={goVertical ? -1 : null}
+                role="radio"
+                aria-checked={isSelected}
+                selected={isSelected}
+              >
+                <div style={{ whiteSpace: "nowrap" }}>
+                  {child.props.children}
+                </div>
+              </Button>
+            );
+          })}
         </ButtonGroupH>
       </div>
     );
