@@ -48,8 +48,8 @@ const Arrow = styled.div`
     left: 0;
     transform: translate(-50%, -50%);
   `} ${({ type }) =>
-      type === "right" &&
-      `
+    type === "right" &&
+    `
     right: 0;
     transform: translate(50%, -50%);
   `};
@@ -155,7 +155,7 @@ class SideScroller extends Component {
     return (
       <Container>
         <ScrollBarHider>
-          <Window innerRef={el => (this.windowEl = el)}>
+          <Window ref={el => (this.windowEl = el)}>
             <SideScrollerItem width="150%">Item 1</SideScrollerItem>
             <SideScrollerItem>Item 2</SideScrollerItem>
             <SideScrollerItem width={300}>Item 3</SideScrollerItem>

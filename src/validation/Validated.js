@@ -18,9 +18,6 @@ export const isErrorMessage = message => !!message && !isHint(message);
 // return new function that takes an argument and passes it down to all functions
 const compose = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
-const isDOMTypeElement = element =>
-  React.isValidElement(element) && typeof element.type === "string";
-
 /*
 TODO:
 - Prevent from breaking when rendered on the server
@@ -123,7 +120,10 @@ export default class Validated extends Component {
     });
     const keyToFocus = findKey(messages, isErrorMessage);
     const elementToFocus = this._refs[keyToFocus];
-    elementToFocus && elementToFocus.current && elementToFocus.current.focus();
+    elementToFocus &&
+      elementToFocus.current &&
+      typeof elementToFocus.current.focus === "function" &&
+      elementToFocus.current.focus();
     this.setState(
       {
         _messages: messages, // Shake the first one with an error
@@ -249,7 +249,7 @@ export default class Validated extends Component {
           render={({ myField }) =>
             <form>
               <MyBasicRadioGroup
-                innerRef={myField.ref}
+                ref={myField.ref}
                 value={myField.value}
                 onChange={value => myField.validateValue(value)}
                 radioOptions={{
@@ -286,7 +286,7 @@ export default class Validated extends Component {
       return {
         name: key,
         ...value,
-        [isDOMTypeElement(element) ? "ref" : "innerRef"]: this._refs[key],
+        ref: this._refs[key],
         onChange: compose(
           validateIfValidated,
           onChange

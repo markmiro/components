@@ -41,9 +41,6 @@ class Bullet extends Component {
         {this.props.isCollapsed ? "+" : "−"}
         <Dot />
         <PlainContentEditable
-          innerRef={el => {
-            this.el = el;
-          }}
           className="no-focus-box"
           data-id={id}
           value={this.state.text}

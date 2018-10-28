@@ -98,7 +98,7 @@ const Form = ({ email, errors, setRef, onChange, onBlur, onSubmit }) => (
         status={errors && "error"}
         onChange={onChange}
         onBlur={onBlur}
-        innerRef={setRef}
+        ref={setRef}
       />
       {errors && <InputMessage status="error">{errors}</InputMessage>}
       <ButtonPrimary type="submit">Submit</ButtonPrimary>

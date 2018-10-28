@@ -61,7 +61,7 @@ const FormControlBase = styled.input`
   }
 `;
 
-const InputField = FormControlBase.extend`
+const InputField = styled(FormControlBase)`
   // background: linear-gradient(#f4f4f4, white 0.2em);
   font-weight: 300;
   user-select: text;
@@ -72,7 +72,7 @@ const InputField = FormControlBase.extend`
   }
 `;
 
-export const Input = InputField.withComponent("input");
+export const Input = InputField;
 
 const AdvancedInputContainer = styled.div`
   position: relative;
@@ -118,30 +118,40 @@ const AdvancedInputIcon = styled.div`
   user-select: none;
 `;
 
-export const AdvancedInput = ({ isValid, isValidating, ...props }) => {
-  const maybePaddingToFitCheck = isValid ? { paddingRight: "2.5em" } : {};
-  return (
-    <AdvancedInputContainer>
-      <Input {...props} style={{ ...props.style, ...maybePaddingToFitCheck }} />
-      {isValid &&
-        !isValidating && (
-          <AdvancedInputIcon style={{ color: SUCCESS_COLOR }}>
-            ✔
+export const AdvancedInput = React.forwardRef(
+  ({ isValid, isValidating, ...props }, ref) => {
+    const maybePaddingToFitCheck = isValid ? { paddingRight: "2.5em" } : {};
+    return (
+      <AdvancedInputContainer>
+        <Input
+          ref={ref}
+          {...props}
+          style={{ ...props.style, ...maybePaddingToFitCheck }}
+        />
+        {isValid &&
+          !isValidating && (
+            <AdvancedInputIcon style={{ color: SUCCESS_COLOR }}>
+              ✔
+            </AdvancedInputIcon>
+          )}
+        {isValidating && (
+          <AdvancedInputIcon>
+            <Loading />
           </AdvancedInputIcon>
         )}
-      {isValidating && (
-        <AdvancedInputIcon>
-          <Loading />
-        </AdvancedInputIcon>
-      )}
-    </AdvancedInputContainer>
-  );
-};
+      </AdvancedInputContainer>
+    );
+  }
+);
 
-export const TextArea = InputField.withComponent("textarea").extend`
-    overflow: auto;
-    resize: vertical;
+const TextAreaBase = styled(InputField)`
+  overflow: auto;
+  resize: vertical;
 `;
+
+export const TextArea = React.forwardRef((props, ref) => (
+  <TextAreaBase as="textarea" ref={ref} {...props} />
+));
 
 export const Label = styled.label`
   display: inline-block;
@@ -157,7 +167,7 @@ export const Label = styled.label`
   }
 `;
 
-export const InputMessage = FinePrint.extend`
+export const InputMessage = styled(FinePrint)`
   color: ${statusColor("rgba(0,0,0,0.55)")};
   font-size: 75%;
   opacity: 1;
@@ -170,7 +180,7 @@ export const InputMessage = FinePrint.extend`
   }
 `;
 
-export const Button = FormControlBase.withComponent("button").extend`
+const ButtonBase = styled(FormControlBase)`
   font-weight: 500;
   // animation: ${({ isSubmitting }) =>
     isSubmitting && "fade-out 1s ease-in-out infinite alternate"};
@@ -183,9 +193,12 @@ export const Button = FormControlBase.withComponent("button").extend`
     selected && "background-image: linear-gradient(#ececec, #bbbbbb0a);"}
 `;
 
-export const Select = Button.withComponent("select").extend`
+export const Button = props => <ButtonBase as="button" {...props} />;
+
+const SelectBase = styled(ButtonBase)`
   height: 2.5em; // You can't set height with padding apparently
-  background: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23333' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E") no-repeat right .75rem center;
+  background: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23333' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E")
+    no-repeat right 0.75rem center;
   background-size: 8px 10px;
   padding-right: 20px;
   appearance: none;
@@ -193,15 +206,21 @@ export const Select = Button.withComponent("select").extend`
   vertical-align: middle;
 `;
 
+export const Select = React.forwardRef((props, ref) => (
+  <SelectBase as="select" ref={ref} {...props} />
+));
+
 const CheckboxOrRadio = styled.input`
   transform: translateY(-0.05em);
   vertical-align: middle;
 `;
-export const LabeledCheckboxOrRadio = ({ label, innerRef, ...rest }) => (
-  <Label style={{ marginBottom: 0 }}>
-    <CheckboxOrRadio innerRef={innerRef} {...rest} />
-    <span style={{ marginLeft: ".5em" }}>{label}</span>
-  </Label>
+export const LabeledCheckboxOrRadio = React.forwardRef(
+  ({ label, ...rest }, ref) => (
+    <Label style={{ marginBottom: 0 }}>
+      <CheckboxOrRadio ref={ref} {...rest} />
+      <span style={{ marginLeft: ".5em" }}>{label}</span>
+    </Label>
+  )
 );
 
 export const ButtonPrimary = styled(Button)`
@@ -344,7 +363,7 @@ const ButtonGroupAbstractBase = styled.div`
   }
 `;
 
-export const ButtonGroupV = ButtonGroupAbstractBase.extend`
+export const ButtonGroupV = styled(ButtonGroupAbstractBase)`
   flex-direction: column;
   & > * + * {
     margin-top: -1px;
@@ -359,7 +378,7 @@ export const ButtonGroupV = ButtonGroupAbstractBase.extend`
   }
 `;
 
-export const ButtonGroupH = ButtonGroupAbstractBase.extend`
+export const ButtonGroupH = styled(ButtonGroupAbstractBase)`
   & > * + * {
     margin-left: -1px;
   }

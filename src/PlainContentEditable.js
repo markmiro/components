@@ -85,7 +85,7 @@ export default class PlainContentEditable extends Component {
   render() {
     // NOTE: intentionally not using `onInput` and onChange`.
     // They're used elsewhere.
-    const { onInput, onChange, value, innerRef, ...rest } = this.props;
+    const { onInput, onChange, value, ref, ...rest } = this.props;
     return (
       <div
         contentEditable
@@ -94,7 +94,7 @@ export default class PlainContentEditable extends Component {
         onDrop={this.handleDrop}
         ref={el => {
           this.el = el;
-          innerRef && innerRef(el);
+          ref && ref(el);
         }}
         dangerouslySetInnerHTML={{ __html: value }}
         {...rest}

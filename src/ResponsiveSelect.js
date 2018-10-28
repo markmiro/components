@@ -55,17 +55,18 @@ export default class ResponsiveSelect extends Component {
         {goVertical &&
           useSelect && (
             <Select
-              value={value}
+              value={JSON.stringify(value)}
               onChange={e => {
                 const childArray = React.Children.toArray(children);
-                const child = childArray.find(
-                  child => child.props.value.toString() === e.target.value
-                );
+                const child = childArray[e.target.selectedOptions[0].index];
                 onChange(child.props.value);
               }}
             >
               {React.Children.map(children, child => (
-                <option {...child.props} />
+                <option
+                  {...child.props}
+                  value={JSON.stringify(child.props.value)}
+                />
               ))}
             </Select>
           )}
@@ -76,7 +77,9 @@ export default class ResponsiveSelect extends Component {
                 <LabeledCheckboxOrRadio
                   type="radio"
                   label={child.props.children}
-                  checked={child.props.value === value}
+                  checked={
+                    JSON.stringify(child.props.value) === JSON.stringify(value)
+                  }
                   onChange={e =>
                     e.target.checked && onChange(child.props.value)
                   }
@@ -92,13 +95,15 @@ export default class ResponsiveSelect extends Component {
                 <Button
                   {...child.props}
                   onClick={() => onChange(child.props.value)}
-                  selected={child.props.value === value}
+                  selected={
+                    JSON.stringify(child.props.value) === JSON.stringify(value)
+                  }
                 />
               ))}
             </ButtonGroupV>
           )}
         <ButtonGroupH
-          innerRef={el => {
+          ref={el => {
             this.buttonGroup = el;
           }}
           style={goVertical ? hiddenStyles : {}}
@@ -107,7 +112,9 @@ export default class ResponsiveSelect extends Component {
             <Button
               {...child.props}
               onClick={() => onChange(child.props.value)}
-              selected={child.props.value === value}
+              selected={
+                JSON.stringify(child.props.value) === JSON.stringify(value)
+              }
             />
           ))}
         </ButtonGroupH>

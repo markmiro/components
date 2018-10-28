@@ -1,12 +1,14 @@
 import { configure } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
-import jsdom from "jsdom";
+const { JSDOM } = require("jsdom");
+
+// https://github.com/airbnb/enzyme/blob/master/docs/guides/jsdom.md
 
 configure({ adapter: new Adapter() });
 
-const doc = jsdom.jsdom(
-  "<!doctype html><html><body><div id='react-app'></div></body></html>"
-);
-global.document = doc;
-global.window = doc.defaultView;
+const jsdom = new JSDOM("<!doctype html><html><body></body></html>");
+const { window } = jsdom;
+
+global.window = window;
+global.document = window.document;
 global.console.log = () => {};

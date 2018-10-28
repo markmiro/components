@@ -35,7 +35,8 @@ const Grid = styled.div`
   display: grid;
   grid-template-columns: auto;
   grid-row-gap: 30px;
-  grid-template-areas: "name-title" "about-info" "experience-section"
+  grid-template-areas:
+    "name-title" "about-info" "experience-section"
     "zetta-title" "zetta-job" "ask-ziggy-title" "ask-ziggy-job" "mini-job"
     "skills-section" "skills";
   font-weight: 300;
@@ -46,7 +47,8 @@ const Grid = styled.div`
     grid-column-gap: 40px;
     grid-row-gap: 60px;
     grid-template-columns: 1fr 217px 610px 1fr;
-    grid-template-areas: ".                   name-title          about-info         ."
+    grid-template-areas:
+      ".                   name-title          about-info         ."
       ".                   experience-section  experience-section ."
       ".                   zetta-title         zetta-job          ."
       ".                   ask-ziggy-title     ask-ziggy-job      ."
@@ -96,7 +98,7 @@ const SectionBase = styled.div`
   font-size: 80%;
 `;
 
-const Section = SectionBase.extend`
+const Section = styled(SectionBase)`
   border-top: 2px solid;
   padding-top: 8px;
   line-height: 1;

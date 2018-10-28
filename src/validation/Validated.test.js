@@ -14,6 +14,13 @@ const ERROR = "Required";
 const isRequired = input => (input ? NO_ERROR : ERROR);
 const ERROR_STR = JSON.stringify(ERROR);
 
+describe("JSDOM", () => {
+  it("works", () => {
+    document.body.innerHTML = "Hi";
+    expect(document.body.textContent).toMatch("Hi");
+  });
+});
+
 describe("<Validated />", () => {
   it("renders without crashing", () => {
     shallow(
@@ -349,6 +356,9 @@ describe("<Validated />", () => {
   // // This should also scroll the window to the first input with an error
   it("shakes the first field that has an error, and focuses it on submit", () => {
     const isRequired = input => (input ? NO_ERROR : "Required");
+    const targetNode = document.createElement("div");
+    targetNode.setAttribute("id", "react-app");
+    document.body.appendChild(targetNode);
     ReactDOM.render(
       <Validated
         validations={{
@@ -370,7 +380,7 @@ describe("<Validated />", () => {
           </form>
         )}
       />,
-      document.querySelector("#react-app")
+      targetNode
     );
 
     document.querySelector("[type=submit]").click();

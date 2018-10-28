@@ -36,7 +36,11 @@ const AllComponents = ({ scale = 1, elementStateClass }) => (
       <hr />
       <div>
         <Label className={elementStateClass}>First Name</Label>
-        <Input className={elementStateClass} value={LOREM_TEXT} />
+        <Input
+          className={elementStateClass}
+          value={LOREM_TEXT}
+          onChange={() => {}}
+        />
         <InputMessage className={elementStateClass}>
           This is something
         </InputMessage>
@@ -49,6 +53,7 @@ const AllComponents = ({ scale = 1, elementStateClass }) => (
           status="error"
           className={elementStateClass}
           value={LOREM_TEXT}
+          onChange={() => {}}
         />
         <InputMessage status="error" className={elementStateClass}>
           This is something
@@ -62,6 +67,7 @@ const AllComponents = ({ scale = 1, elementStateClass }) => (
           status="warning"
           className={elementStateClass}
           value={LOREM_TEXT}
+          onChange={() => {}}
         />
         <InputMessage status="warning" className={elementStateClass}>
           This is something
@@ -75,6 +81,7 @@ const AllComponents = ({ scale = 1, elementStateClass }) => (
           status="success"
           className={elementStateClass}
           value={LOREM_TEXT}
+          onChange={() => {}}
         />
         <InputMessage status="success" className={elementStateClass}>
           This is something
@@ -130,7 +137,11 @@ const AllComponents = ({ scale = 1, elementStateClass }) => (
     <br />
     <div>
       <Label>Text Area</Label>
-      <TextArea className={elementStateClass} value={LOREM_TEXT} />
+      <TextArea
+        className={elementStateClass}
+        value={LOREM_TEXT}
+        onChange={() => {}}
+      />
     </div>
     <FinePrint>
       Lorem ipsum dolor sit amet, consectetur <a href="#">adipisicing elit</a>.

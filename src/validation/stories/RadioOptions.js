@@ -11,7 +11,8 @@ class RadioOptions extends React.Component {
         render={({ a }) => (
           <div>
             {a.watchFull(
-              <ResponsiveSelect useRadio>
+              // Overriding `onChange` to always validate value
+              <ResponsiveSelect onChange={a.validateValue}>
                 <ResponsiveOption value={{ bla: 1 }}>
                   Valid 111
                 </ResponsiveOption>
