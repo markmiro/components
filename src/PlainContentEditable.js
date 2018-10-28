@@ -94,7 +94,7 @@ export default class PlainContentEditable extends Component {
         onDrop={this.handleDrop}
         ref={el => {
           this.el = el;
-          innerRef(el);
+          innerRef && innerRef(el);
         }}
         dangerouslySetInnerHTML={{ __html: value }}
         {...rest}
