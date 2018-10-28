@@ -75,7 +75,7 @@ export default class ResponsiveSelect extends Component {
           )}
         {goVertical &&
           useRadio && (
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <React.Fragment>
               {React.Children.map(children, child => (
                 <LabeledCheckboxOrRadio
                   type="radio"
@@ -88,7 +88,7 @@ export default class ResponsiveSelect extends Component {
                   }
                 />
               ))}
-            </div>
+            </React.Fragment>
           )}
         {goVertical &&
           !useSelect &&
