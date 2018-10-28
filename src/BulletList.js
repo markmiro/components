@@ -47,7 +47,7 @@ class Bullet extends Component {
           className="no-focus-box"
           data-id={id}
           value={this.state.text}
-          onChange={text => this.setState({ text })}
+          onChange={this.props.onChange}
           onInput={e => {
             console.log(e.shiftKey && "SHIFT", e.key);
             e.key === "Backspace" && !this.state.text && this.props.remove();
@@ -70,15 +70,15 @@ class Bullet extends Component {
 class BulletList extends Component {
   constructor(props) {
     super(props);
+    const nodeTree = JSON.parse(window.localStorage.getItem("nodeTree"));
     this.state = {
-      nodes: new NodeTree([
-        {
-          label: "Hello"
-        },
-        {
-          label: "There"
-        }
-      ])
+      nodes: new NodeTree(
+        (nodeTree && values(nodeTree)) || [
+          {
+            label: "Type something"
+          }
+        ]
+      )
     };
     this.ref = React.createRef();
   }
@@ -87,7 +87,15 @@ class BulletList extends Component {
   }
   componentWillUnmount() {
     document.removeEventListener("mouseup", this.handleMouseUp);
+    window.localStorage.setItem(
+      "nodeTree",
+      JSON.stringify(this.state.nodes.tree)
+    );
   }
+  handleTextChange = (text, id) => {
+    this.state.nodes.getNodeAt(id).label = text;
+    this.forceUpdate();
+  };
   handleMouseUp = e => {
     this.setState({ isMouseDown: false });
   };
@@ -174,6 +182,7 @@ class BulletList extends Component {
             <Bullet
               key={id}
               id={id}
+              onChange={text => this.handleTextChange(text, id)}
               isSelected={isSelected}
               addNodeBelow={this.addNodeBelow}
               remove={this.removeSelected}
