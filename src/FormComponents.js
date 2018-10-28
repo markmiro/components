@@ -213,13 +213,26 @@ export const Select = React.forwardRef((props, ref) => (
 const CheckboxOrRadio = styled.input`
   transform: translateY(-0.05em);
   vertical-align: middle;
+  &:focus,
+  &.focus {
+    box-shadow: none;
+  }
+`;
+const CheckboxOrRadioLabel = styled(Label)`
+  margin-bottom: 0;
+  width: 100%;
+  &:focus-within,
+  &.focus {
+    outline: 2px solid hsla(227, 71%, 55%, 0.25);
+    outline-offset: 4px;
+  }
 `;
 export const LabeledCheckboxOrRadio = React.forwardRef(
-  ({ label, ...rest }, ref) => (
-    <Label style={{ marginBottom: 0 }}>
+  ({ label, className, ...rest }, ref) => (
+    <CheckboxOrRadioLabel className={className}>
       <CheckboxOrRadio ref={ref} {...rest} />
       <span style={{ marginLeft: ".5em" }}>{label}</span>
-    </Label>
+    </CheckboxOrRadioLabel>
   )
 );
 

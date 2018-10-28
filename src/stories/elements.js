@@ -121,12 +121,7 @@ const AllComponents = ({ scale = 1, elementStateClass }) => (
       className={elementStateClass}
     />
     <br />
-    <LabeledCheckboxOrRadio
-      type="radio"
-      name="dos"
-      label="Two"
-      className={elementStateClass}
-    />
+    <LabeledCheckboxOrRadio type="radio" name="dos" label="Two" />
     <br />
     <LabeledCheckboxOrRadio
       type="radio"
@@ -144,10 +139,12 @@ const AllComponents = ({ scale = 1, elementStateClass }) => (
       />
     </div>
     <FinePrint>
-      Lorem ipsum dolor sit amet, consectetur <a href="#">adipisicing elit</a>.
-      Totam porro temporibus ullam, explicabo optio corporis sit repellat veniam
-      atque fugiat consequatur nisi tempore, suscipit reprehenderit deserunt
-      ipsum fugit, at aliquid!
+      Lorem ipsum dolor sit amet, consectetur{" "}
+      <a className={elementStateClass} href="#">
+        adipisicing elit
+      </a>. Totam porro temporibus ullam, explicabo optio corporis sit repellat
+      veniam atque fugiat consequatur nisi tempore, suscipit reprehenderit
+      deserunt ipsum fugit, at aliquid!
     </FinePrint>
   </VerticalSpacer>
 );

@@ -12,6 +12,7 @@ input,
 select,
 button {
   color: #333;
+  position: relative;
 }
 body {
   font-family: system-ui, Roboto, Helvetica, sans-serif;
@@ -36,6 +37,18 @@ body {
   border-color: hsla(217, 71%, 55%, 0.5) !important;
   box-shadow: inset 0px 2px 2px 0px hsla(217, 71%, 55%, 0.14),
     0px 0px 0px 2px hsla(227, 71%, 55%, 0.25);
+  z-index: 1;
+}
+a:focus,
+a.focus {
+  box-shadow: none;
+  outline: 2px solid hsla(227, 71%, 55%, 0.25);
+}
+a:disabled,
+a.disabled {
+  opacity: 0.65;
+  color: inherit;
+  pointer-events: none;
 }
 h1 {
   padding-bottom: 0.25rem;
