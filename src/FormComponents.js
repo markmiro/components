@@ -116,6 +116,8 @@ const AdvancedInputIcon = styled.div`
   right: ${INPUT_PADDING_H};
   transform: translateY(-50%);
   user-select: none;
+  // Using default font is weird in Safari
+  font-family: sans-serif;
 `;
 
 export const AdvancedInput = React.forwardRef(
@@ -128,7 +130,8 @@ export const AdvancedInput = React.forwardRef(
           {...props}
           style={{ ...props.style, ...maybePaddingToFitCheck }}
         />
-        {isValid &&
+        {props.value &&
+          isValid &&
           !isValidating && (
             <AdvancedInputIcon style={{ color: SUCCESS_COLOR }}>
               ✔
