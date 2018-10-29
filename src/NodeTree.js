@@ -1,177 +1,233 @@
 import {
-  uniqueId,
-  isArray,
-  isObject,
-  isUndefined,
   keyBy,
   takeWhile,
   takeRightWhile,
+  reject,
   values,
-  last,
-  minBy
+  first,
+  last
 } from "lodash";
+import uuid from "uuid/v1";
+
+// SETUP -----------
 
 const nodeDefaults = () => ({
   label: "",
   isCollapsed: false,
   isSelected: false,
-  id: uniqueId("node"),
+  id: uuid(),
   indentLevel: 0,
   extras: {}
 });
 
-/*
-  This could be a reducer?
-  May not want to store this in state because we may want to update nodes by hand based on this structure
-  Process could be:
-  - User does action
-  - Action handled by this class or reducer thing (we want to store data in efficient way)
-  - The relevant node is updated
-*/
-export default class NodeTree {
-  constructor(nodeTree) {
-    // Use a hashmap or something?
-    this.selectStartId = null;
-    this.selectEndId = null;
-    if (isArray(nodeTree)) {
-      const setDefaults = node => ({ ...nodeDefaults(), ...node });
-      this.tree = keyBy(nodeTree.map(setDefaults), "id");
-    } else if (isObject(nodeTree)) {
-      this.tree = (nodeTree && { ...nodeDefaults(), ...nodeTree }) || {};
-    } else if (isUndefined(nodeTree)) {
-      this.tree = {};
-    } else {
-      throw new Error("Didn't expect `nodeTree` of type " + typeof nodeTree);
-    }
-    /*
-    Node: {
-      id
-      label
-      isCollapsed: false,
-      isSelected (not sure if this is the best way, but might be good for now, this could be a function to have state in one place)
-      extras (anything you wanna store, including the react class that we use to wrap the contenteditable stuff with)
-    }
-    */
+const defaultNode = nodeDefaults();
+const defaultTree = {
+  [defaultNode.id]: {
+    ...defaultNode,
+    label: "Type something"
   }
-  removeSelected() {
-    this.selectionStartId = null;
-    this.selectionEndId = null;
-    this.isFromIndexHigher = true;
-    const notTargetNode = node => !node.isSelected;
-    const list = [
-      ...takeWhile(values(this.tree), notTargetNode),
-      ...takeRightWhile(values(this.tree), notTargetNode)
-    ];
-    this.tree = keyBy(list, "id");
+};
+const localNodeTree = JSON.parse(window.localStorage.getItem("nodeTree"));
+export const initialState = {
+  selectionStartId: null,
+  selectionEndId: null,
+  isFromIndexHigher: true,
+  tree: localNodeTree || defaultTree
+};
+
+// REDUCER -----------
+
+export function reducer(state, action) {
+  console.log(action);
+  switch (action.type) {
+    case "SELECT":
+      return select(state, {
+        fromId: action.fromId,
+        toId: action.toId
+      });
+    case "CURSOR_UP":
+      const upId = treeFuncs.getNodeAbove(state.tree, state.selectionStartId)
+        .id;
+      return select(state, {
+        fromId: upId,
+        toId: upId
+      });
+    case "SHIFT_UP":
+      const shiftUpId = treeFuncs.getNodeAbove(
+        state.tree,
+        state.selectionStartId
+      ).id;
+      return select(state, {
+        fromId: shiftUpId
+      });
+    case "CURSOR_DOWN":
+      const downId = treeFuncs.getNodeBelow(state.tree, state.selectionEndId)
+        .id;
+      return select(state, {
+        fromId: downId,
+        toId: downId
+      });
+    case "SHIFT_DOWN":
+      const shiftDownId = treeFuncs.getNodeBelow(
+        state.tree,
+        state.selectionEndId
+      ).id;
+      return select(state, {
+        toId: shiftDownId
+      });
+    case "CHANGE_LABEL":
+      return {
+        ...state,
+        tree: treeFuncs.updateNodeAtId(state.tree, action.id, {
+          label: action.label
+        })
+      };
+    case "ADD_NODE_BELOW":
+      const deselectedState = deselectAll(state);
+      return {
+        ...deselectedState,
+        ...treeFuncs.addBelow(deselectedState.tree, action.id)
+      };
+    case "REMOVE_SELECTED":
+      return removeSelected(state);
+    default:
+      return state;
   }
-  // Adds bullet below or adds inside based on whether it already has some nodes indented
-  addBelow(params) {
-    this.deselectAll();
-    const node = params.node || {};
-    const keys = Object.keys(this.tree);
+}
+
+// TREE FUNCS -----------
+
+export const treeFuncs = {
+  getNode(tree, id) {
+    return tree[id];
+  },
+  map(tree, func) {
+    return keyBy(values(tree).map(func), "id");
+  },
+  mapValues(tree, func) {
+    return values(tree).map(func);
+  },
+  updateNodeAtId(tree, id, nodeChanges) {
+    return treeFuncs.map(tree, node => {
+      if (node.id !== id) return node;
+      return {
+        ...node,
+        ...nodeChanges
+      };
+    });
+  },
+  addBelow(tree, id) {
     const newNode = {
       ...nodeDefaults(),
-      ...node,
       isSelected: true
     };
-    if (keys.length === 0) {
-      this.tree[newNode.id] = newNode;
+    const list = values(tree);
+    if (Object.keys(tree).length === 0) {
+      return {
+        [newNode.id]: newNode
+      };
     } else {
-      const id = params.id || last(values(this.tree)).id;
-      const notTargetNode = node => node.id !== id;
-      const list = [
-        ...takeWhile(values(this.tree), notTargetNode),
-        this.getNodeAt(id),
+      const idAbove = id || last(list).id;
+      const notTargetNode = node => node.id !== idAbove;
+      const newList = [
+        ...takeWhile(list, notTargetNode),
+        treeFuncs.getNode(tree, idAbove),
         newNode,
-        ...takeRightWhile(values(this.tree), notTargetNode)
+        ...takeRightWhile(list, notTargetNode)
       ];
-      console.info(list);
-      this.tree = keyBy(list, "id");
+      console.info(newList);
+      return {
+        tree: keyBy(newList, "id"),
+        selectionStartId: newNode.id,
+        selectionEndId: newNode.id
+      };
     }
-    return newNode;
-  }
-  // expand(id) {}
-  // collapse(id) {}
-  // TODO: make this.isSelected(id) function instead?
-  select({ fromId = this.selectionStartId, toId = this.selectionEndId }) {
-    const indexRange = () => {
-      const fromNode = this.tree[fromId];
-      const toNode = this.tree[toId];
-      const list = values(this.tree);
-      const fromIndex = list.indexOf(fromNode);
-      const toIndex = list.indexOf(toNode);
-      const minIndex = Math.min(fromIndex, toIndex);
-      const maxIndex = Math.max(fromIndex, toIndex);
-      const isFromIndexHigher = fromIndex < toIndex;
-      return { minIndex, maxIndex, isFromIndexHigher };
-    };
-    const { minIndex, maxIndex, isFromIndexHigher } = indexRange(fromId, toId);
-    this.selectionStartId = fromId;
-    this.selectionEndId = toId;
-    this.isFromIndexHigher = isFromIndexHigher;
-    values(this.tree).forEach((node, i) => {
-      node.isSelected = i >= minIndex && i <= maxIndex;
-    });
-  }
-  deselectAll() {
-    this.selectionStartId = null;
-    this.selectionEndId = null;
-    this.isFromIndexHigher = true;
-    values(this.tree).forEach((node, i) => {
-      node.isSelected = false;
-    });
-  }
-  getNodeAboveSelection() {
-    const id = this.isFromIndexHigher
-      ? this.selectionStartId
-      : this.selectionEndId;
-    return this.getNodeAbove(id);
-  }
-  getNodeBelowSelection() {
-    const id = this.isFromIndexHigher
-      ? this.selectionEndId
-      : this.selectionStartId;
-    return this.getNodeBelow(id);
-  }
-  indentSelected() {
-    const list = values(this.tree);
-    if (list[0].isSelected) return; // Don't indent first item
-    const parentIndentLevel = this.getNodeAboveSelection().indentLevel;
-    const minSelectedIndentLevel = minBy(
-      list.filter(node => node.isSelected),
-      node => node.indentLevel
-    ).indentLevel;
-    list.forEach((node, i) => {
-      if (node.isSelected) {
-        node.indentLevel =
-          node.indentLevel - minSelectedIndentLevel + parentIndentLevel + 1;
-      }
-    });
-  }
-  unindentSelected() {
-    values(this.tree).forEach((node, i) => {
-      if (node.isSelected) {
-        node.indentLevel = Math.max(0, node.indentLevel - 1);
-      }
-    });
-  }
-  getNodeAt(id) {
-    return this.tree[id];
-  }
-  getFirstNode() {
-    const list = values(this.tree);
-    return list[0];
-  }
-  getNodeAbove(id) {
-    const node = this.tree[id];
-    const list = values(this.tree);
+  },
+  getNodeAbove(tree, id) {
+    const node = tree[id];
+    const list = values(tree);
     const index = Math.max(list.indexOf(node) - 1, 0);
     return list[index];
-  }
-  getNodeBelow(id) {
-    const node = this.tree[id];
-    const list = values(this.tree);
+  },
+  getNodeBelow(tree, id) {
+    const node = tree[id];
+    const list = values(tree);
     const index = Math.min(list.indexOf(node) + 1, list.length - 1);
     return list[index];
+  },
+  getFirstNode(tree) {
+    return first(values(tree));
+  },
+  removeSelected(tree) {
+    const list = reject(values(tree), "isSelected");
+    return keyBy(list, "id");
   }
+};
+
+// STATE FUNCS -----------
+
+function select(state, newSelection) {
+  const { fromId, toId } = {
+    fromId: newSelection.fromId || state.selectionStartId,
+    toId: newSelection.toId || state.selectionEndId
+  };
+  const indexRange = () => {
+    const fromNode = treeFuncs.getNode(state.tree, fromId);
+    const toNode = treeFuncs.getNode(state.tree, toId);
+    const list = values(state.tree);
+    const fromIndex = list.indexOf(fromNode);
+    const toIndex = list.indexOf(toNode);
+    const minIndex = Math.min(fromIndex, toIndex);
+    const maxIndex = Math.max(fromIndex, toIndex);
+    const isFromIndexHigher = fromIndex <= toIndex;
+    return { minIndex, maxIndex, isFromIndexHigher };
+  };
+  const { minIndex, maxIndex, isFromIndexHigher } = indexRange(fromId, toId);
+  return {
+    ...state,
+    selectionStartId: fromId,
+    selectionEndId: toId,
+    isFromIndexHigher: isFromIndexHigher,
+    tree: treeFuncs.map(state.tree, (node, i) => ({
+      ...node,
+      isSelected: i >= minIndex && i <= maxIndex
+    }))
+  };
+}
+
+function removeSelected(state) {
+  const newTree = treeFuncs.removeSelected(state.tree);
+
+  function getSelectedIdAfterDeletion() {
+    const nodeIdAboveSelection = treeFuncs.getNodeAbove(
+      state.tree,
+      state.isFromIndexHigher ? state.selectionStartId : state.selectionEndId
+    ).id;
+    const firstNodeId = treeFuncs.getFirstNode(state.tree).id;
+    if (nodeIdAboveSelection === firstNodeId) {
+      return treeFuncs.getFirstNode(newTree).id;
+    }
+    return nodeIdAboveSelection;
+  }
+
+  const newState = {
+    ...state,
+    tree: newTree
+  };
+
+  const id = getSelectedIdAfterDeletion();
+  return select(newState, { fromId: id, toId: id });
+}
+
+function deselectAll(state) {
+  return {
+    ...state,
+    selectionStartId: null,
+    selectionEndId: null,
+    isFromIndexHigher: true,
+    tree: treeFuncs.map(state.tree, node => ({
+      ...node,
+      isSelected: false
+    }))
+  };
 }

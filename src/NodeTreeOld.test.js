@@ -1,4 +1,4 @@
-import NodeTree from "./NodeTree";
+import NodeTree from "./NodeTreeOld";
 import { values } from "lodash";
 
 test("constructor", () => {

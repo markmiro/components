@@ -1,8 +1,19 @@
-import React, { Component } from "react";
+import React, { useReducer, useEffect, useState } from "react";
 import styled from "styled-components";
-import { uniqueId, takeWhile, takeRightWhile, values } from "lodash";
+import hashEmoji from "hash-emoji";
 import PlainContentEditable from "./PlainContentEditable";
-import NodeTree from "./NodeTree";
+import { reducer, initialState, treeFuncs } from "./NodeTree";
+
+const Id = styled.div`
+  font-family: monospace;
+  width: 7em;
+  font-size: 0.75em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  align-self: center;
+  text-align: right;
+`;
 
 const Box = styled.span`
   &:hover {
@@ -20,21 +31,15 @@ const Dot = styled.span`
   }
 `;
 
-function Bullet(props) {
-  const {
-    id,
-    label,
-    indentLevel,
-    isSelected,
-    isCollapsed,
-    onChange,
-    remove,
-    cursorUp,
-    cursorDown,
-    unindent,
-    indent,
-    addNodeBelow
-  } = props;
+function Bullet({ id, bulletState, dispatch }) {
+  const { label, indentLevel, isSelected, isCollapsed } = bulletState;
+
+  const onChange = label => dispatch({ type: "CHANGE_LABEL", label, id });
+  const addNodeBelow = id => dispatch({ type: "ADD_NODE_BELOW", id });
+  const removeSelected = () => dispatch({ type: "REMOVE_SELECTED", id });
+  const unindentSelected = () => dispatch({ type: "UNINDENT_SELECTED" });
+  const indentSelected = () => dispatch({ type: "INDENT_SELECTED" });
+
   return (
     <Box
       title={id}
@@ -52,154 +57,110 @@ function Bullet(props) {
         value={label}
         onChange={onChange}
         onInput={e => {
-          console.log(e.shiftKey && "SHIFT", e.key);
-          e.key === "Backspace" && !this.state.text && remove();
-          e.key === "ArrowUp" && cursorUp();
-          e.key === "ArrowDown" && cursorDown();
+          e.key === "Backspace" && !label && removeSelected();
           if (e.shiftKey && e.key === "Tab") {
-            unindent(id);
+            unindentSelected();
           } else if (e.key === "Tab") {
-            indent(id);
+            indentSelected();
           }
           e.key === "Enter" && addNodeBelow(id);
         }}
         style={{ width: "100%" }}
       />
+      <Id title={id}>
+        {hashEmoji(label)}
+        {hashEmoji(id)}
+      </Id>
     </Box>
   );
 }
 
-class BulletList extends Component {
-  constructor(props) {
-    super(props);
-    const nodeTree = JSON.parse(window.localStorage.getItem("nodeTree"));
-    this.state = {
-      nodes: new NodeTree(
-        (nodeTree && values(nodeTree)) || [
-          {
-            label: "Type something"
-          }
-        ]
-      )
-    };
-    this.ref = React.createRef();
-  }
-  componentDidMount() {
-    document.addEventListener("mouseup", this.handleMouseUp);
-  }
-  componentWillUnmount() {
-    document.removeEventListener("mouseup", this.handleMouseUp);
-    window.localStorage.setItem(
-      "nodeTree",
-      JSON.stringify(this.state.nodes.tree)
-    );
-  }
-  handleTextChange = (text, id) => {
-    this.state.nodes.getNodeAt(id).label = text;
-    this.forceUpdate();
-  };
-  handleMouseUp = e => {
-    this.setState({ isMouseDown: false });
-  };
-  indent = id => {
-    this.state.nodes.indentSelected();
-    this.forceUpdate();
-  };
-  unindent = id => {
-    this.state.nodes.unindentSelected();
-    this.forceUpdate();
-  };
-  removeSelected = () => {
-    const { nodes } = this.state;
-    let id = nodes.getNodeAboveSelection().id;
-    nodes.removeSelected();
-    if (!nodes.getNodeAt(id)) id = nodes.getFirstNode().id;
-    this.focus(id);
-  };
-  focus = id => {
-    this.state.nodes.deselectAll();
-    this.state.nodes.select({ fromId: id, toId: id });
-    this.forceUpdate(() => {
-      setTimeout(() => {
+function BulletList() {
+  const ref = React.createRef();
+  const [isMouseDown, setMouseDown] = useState(false);
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(
+    () => {
+      document.addEventListener("mouseup", handleMouseUp);
+      const id = state.selectionStartId;
+      if (!isMouseDown && id) {
+        console.log(
+          "select",
+          id,
+          ref.current.querySelector(`[data-id="${id}"]`),
+          state
+        );
         const range = document.createRange();
         const sel = window.getSelection();
-        range.setStart(this.ref.current.querySelector(`[data-id=${id}]`), 0);
+        range.setStart(ref.current.querySelector(`[data-id="${id}"]`), 0);
         range.collapse(true);
         sel.removeAllRanges();
         sel.addRange(range);
-      }, 0);
-    });
-  };
-  cursorTo = direction => {
-    const { nodes } = this.state;
-    if (direction === "up") {
-      this.focus(nodes.getNodeAboveSelection().id);
-    } else if (direction === "down") {
-      this.focus(nodes.getNodeBelowSelection().id);
-    } else {
-      throw new Error("Direction either not provided or invalid");
-    }
-  };
-  addNodeBelow = id => {
-    const newNode = this.state.nodes.addBelow({ id });
-    this.focus(newNode.id);
-  };
-  render() {
-    return (
-      <div
-        ref={this.ref}
-        onMouseDown={e => {
-          const id = document.elementFromPoint(e.clientX, e.clientY).dataset.id;
-          this.state.nodes.select({ fromId: id, toId: id });
-          this.setState({
-            isMouseDown: true
-          });
-        }}
-        onMouseMove={e => {
-          if (this.state.isMouseDown) {
-            const id = document.elementFromPoint(e.clientX, e.clientY).dataset
-              .id;
-            this.state.nodes.select({ toId: id });
-            if (
-              this.state.nodes.selectionStartId !==
-              this.state.nodes.selectionEndId
-            ) {
-              window.getSelection().removeAllRanges();
-            }
-            this.forceUpdate();
-          }
-        }}
-        onKeyUp={e => {
-          if (
-            e.key === "Backspace" &&
-            this.state.nodes.selectionStartId !==
-              this.state.nodes.selectionEndId
-          ) {
-            this.removeSelected();
-          }
-        }}
-      >
-        {values(this.state.nodes.tree).map(
-          ({ id, label, isSelected, indentLevel }, i) => (
-            <Bullet
-              key={id}
-              id={id}
-              label={label}
-              onChange={text => this.handleTextChange(text, id)}
-              isSelected={isSelected}
-              addNodeBelow={this.addNodeBelow}
-              remove={this.removeSelected}
-              indent={this.indent}
-              unindent={this.unindent}
-              cursorUp={() => this.cursorTo("up")}
-              cursorDown={() => this.cursorTo("down")}
-              indentLevel={indentLevel}
-            />
-          )
-        )}
-      </div>
-    );
+      }
+      return () => document.removeEventListener("mouseup", handleMouseUp);
+    },
+    [state.selectionStartId, state.selectionEndId]
+  );
+
+  function handleMouseUp() {
+    setMouseDown(false);
   }
+
+  function dispatchProxy(action) {
+    dispatch(action);
+    switch (action.type) {
+      case "ADD_NODE_BELOW":
+        focus(action.id);
+      default:
+        break;
+    }
+  }
+
+  return (
+    <div
+      ref={ref}
+      onKeyDown={e => {
+        e.key === "ArrowUp" &&
+          dispatch({ type: e.shiftKey ? "SHIFT_UP" : "CURSOR_UP" });
+        e.key === "ArrowDown" &&
+          dispatch({ type: e.shiftKey ? "SHIFT_DOWN" : "CURSOR_DOWN" });
+      }}
+      onKeyUp={e => {
+        const isSelectingMultipleLines =
+          state.selectionStartId !== state.selectionEndId;
+        if (e.key === "Backspace" && isSelectingMultipleLines) {
+          dispatch({ type: "REMOVE_SELECTED" });
+        }
+      }}
+      onMouseDown={e => {
+        const id = document.elementFromPoint(e.clientX, e.clientY).dataset.id;
+        dispatch({ type: "SELECT", fromId: id, toId: id });
+        setMouseDown(true);
+      }}
+      onMouseMove={e => {
+        if (isMouseDown) {
+          const id = document.elementFromPoint(e.clientX, e.clientY).dataset.id;
+          dispatch({ type: "SELECT", toId: id });
+          if (state.selectionStartId !== state.selectionEndId) {
+            window.getSelection().removeAllRanges();
+          }
+        }
+      }}
+    >
+      {treeFuncs.mapValues(state.tree, ({ id }) => (
+        <Bullet
+          key={id}
+          id={id}
+          bulletState={treeFuncs.getNode(state.tree, id)}
+          dispatch={dispatchProxy}
+        />
+      ))}
+      Start: {hashEmoji(state.selectionStartId)}, End:{" "}
+      {hashEmoji(state.selectionEndId)}, isReversed:{" "}
+      {String(!state.isFromIndexHigher)}
+    </div>
+  );
 }
 
 export default BulletList;
