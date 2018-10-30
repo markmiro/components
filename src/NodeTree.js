@@ -5,7 +5,12 @@ import {
   reject,
   values,
   first,
-  last
+  last,
+  isEmpty,
+  flatMapDeep,
+  get,
+  omit,
+  findIndex
 } from "lodash";
 import uuid from "uuid/v1";
 import demoState from "./nodeTreeDemo";
@@ -18,7 +23,8 @@ const nodeDefaults = () => ({
   isSelected: false,
   id: uuid(),
   indentLevel: 0,
-  extras: {}
+  extras: {},
+  tree: {}
 });
 
 const defaultNode = nodeDefaults();
@@ -47,32 +53,30 @@ export function reducer(state, action) {
         toId: action.toId
       });
     case "CURSOR_UP":
-      const upId = treeFuncs.getNodeAbove(state.tree, state.selectionStartId)
-        .id;
+      const upId = treeFuncs.getNodeAboveId(state.tree, state.selectionStartId);
       return select(state, {
         fromId: upId,
         toId: upId
       });
     case "SHIFT_UP":
-      const shiftUpId = treeFuncs.getNodeAbove(
+      const shiftUpId = treeFuncs.getNodeAboveId(
         state.tree,
         state.selectionStartId
-      ).id;
+      );
       return select(state, {
         fromId: shiftUpId
       });
     case "CURSOR_DOWN":
-      const downId = treeFuncs.getNodeBelow(state.tree, state.selectionEndId)
-        .id;
+      const downId = treeFuncs.getNodeBelowId(state.tree, state.selectionEndId);
       return select(state, {
         fromId: downId,
         toId: downId
       });
     case "SHIFT_DOWN":
-      const shiftDownId = treeFuncs.getNodeBelow(
+      const shiftDownId = treeFuncs.getNodeBelowId(
         state.tree,
         state.selectionEndId
-      ).id;
+      );
       return select(state, {
         toId: shiftDownId
       });
@@ -98,15 +102,51 @@ export function reducer(state, action) {
 
 // TREE FUNCS -----------
 
+// Fancy version of `values(tree);`
+export function asList(tree, depth = 0) {
+  return flatMapDeep(values(tree), node => {
+    const nodeWithoutTree = {
+      ...omit(node, "tree"),
+      depth
+    };
+    return isEmpty(node.tree)
+      ? nodeWithoutTree
+      : [nodeWithoutTree, asList(node.tree, depth + 1)];
+  });
+}
+
+// Fancy version of `keyBy(list, "id")`
+export function asTree(list) {
+  let tree = {};
+  let currentPath = [];
+  list.forEach(node => {
+    const nodeWithTree = {
+      ...omit(node, "depth"),
+      tree: {}
+    };
+    if (node.depth === 0) {
+      tree[node.id] = nodeWithTree;
+    } else {
+      get(tree, currentPath.join(".tree.")).tree[node.id] = nodeWithTree;
+    }
+    currentPath[node.depth] = node.id;
+    currentPath = currentPath.slice(0, node.depth + 1);
+  });
+  console.info(tree);
+  return tree;
+}
+
 export const treeFuncs = {
+  // TODO: In BulletList we want the node that has the tree
+  // TODO: maybe keep both tree and list representations in memory, or keep id to node (sorted map)
   getNode(tree, id) {
-    return tree[id];
+    return keyBy(asList(tree), "id")[id];
   },
   map(tree, func) {
-    return keyBy(values(tree).map(func), "id");
+    return asTree(asList(tree).map(func));
   },
   mapValues(tree, func) {
-    return values(tree).map(func);
+    return asList(tree).map(func);
   },
   updateNodeAtId(tree, id, nodeChanges) {
     return treeFuncs.map(tree, node => {
@@ -120,48 +160,55 @@ export const treeFuncs = {
   addBelow(tree, id) {
     const newNode = {
       ...nodeDefaults(),
+      depth: 0,
       isSelected: true
     };
-    const list = values(tree);
+    const list = asList(tree);
+    let newList = [];
     if (Object.keys(tree).length === 0) {
-      return {
-        [newNode.id]: newNode
-      };
+      newList = [newNode];
     } else {
       const idAbove = id || last(list).id;
       const notTargetNode = node => node.id !== idAbove;
-      const newList = [
+      const nodeAbove = treeFuncs.getNode(tree, idAbove);
+      newList = [
         ...takeWhile(list, notTargetNode),
-        treeFuncs.getNode(tree, idAbove),
-        newNode,
+        nodeAbove,
+        { ...newNode, depth: nodeAbove.depth },
         ...takeRightWhile(list, notTargetNode)
       ];
-      console.info(newList);
-      return {
-        tree: keyBy(newList, "id"),
-        selectionStartId: newNode.id,
-        selectionEndId: newNode.id
-      };
+      // console.info(newList);
     }
+    return {
+      tree: asTree(newList),
+      selectionStartId: newNode.id,
+      selectionEndId: newNode.id
+    };
   },
-  getNodeAbove(tree, id) {
+  getNodeAboveId(tree, id) {
     const node = tree[id];
-    const list = values(tree);
-    const index = Math.max(list.indexOf(node) - 1, 0);
-    return list[index];
+    const list = asList(tree);
+    const index = Math.max(findIndex(list, n => n.id === node.id) - 1, 0);
+    return list[index].id;
   },
-  getNodeBelow(tree, id) {
+  getNodeBelowId(tree, id) {
     const node = tree[id];
-    const list = values(tree);
-    const index = Math.min(list.indexOf(node) + 1, list.length - 1);
-    return list[index];
+    const list = asList(tree);
+    const index = Math.min(
+      findIndex(list, n => n.id === node.id) + 1,
+      list.length - 1
+    );
+    return list[index].id;
   },
-  getFirstNode(tree) {
-    return first(values(tree));
+  getFirstNodeId(tree) {
+    return first(asList(tree)).id;
   },
   removeSelected(tree) {
-    const list = reject(values(tree), "isSelected");
-    return keyBy(list, "id");
+    const list = reject(asList(tree), "isSelected");
+    if (list.length === 0) {
+      return defaultState.tree;
+    }
+    return asTree(list);
   }
 };
 
@@ -172,27 +219,29 @@ function select(state, newSelection) {
     fromId: newSelection.fromId || state.selectionStartId,
     toId: newSelection.toId || state.selectionEndId
   };
+  const list = asList(state.tree);
   const indexRange = () => {
     const fromNode = treeFuncs.getNode(state.tree, fromId);
     const toNode = treeFuncs.getNode(state.tree, toId);
-    const list = values(state.tree);
-    const fromIndex = list.indexOf(fromNode);
-    const toIndex = list.indexOf(toNode);
+    const fromIndex = findIndex(list, n => n.id === fromNode.id);
+    const toIndex = findIndex(list, n => n.id === toNode.id);
     const minIndex = Math.min(fromIndex, toIndex);
     const maxIndex = Math.max(fromIndex, toIndex);
     const isFromIndexHigher = fromIndex <= toIndex;
     return { minIndex, maxIndex, isFromIndexHigher };
   };
-  const { minIndex, maxIndex, isFromIndexHigher } = indexRange(fromId, toId);
+  const { minIndex, maxIndex, isFromIndexHigher } = indexRange();
   return {
     ...state,
     selectionStartId: fromId,
     selectionEndId: toId,
     isFromIndexHigher: isFromIndexHigher,
-    tree: treeFuncs.map(state.tree, (node, i) => ({
-      ...node,
-      isSelected: i >= minIndex && i <= maxIndex
-    }))
+    tree: asTree(
+      list.map((node, i) => ({
+        ...node,
+        isSelected: i >= minIndex && i <= maxIndex
+      }))
+    )
   };
 }
 
@@ -200,13 +249,13 @@ function removeSelected(state) {
   const newTree = treeFuncs.removeSelected(state.tree);
 
   function getSelectedIdAfterDeletion() {
-    const nodeIdAboveSelection = treeFuncs.getNodeAbove(
+    const nodeIdAboveSelection = treeFuncs.getNodeAboveId(
       state.tree,
       state.isFromIndexHigher ? state.selectionStartId : state.selectionEndId
-    ).id;
-    const firstNodeId = treeFuncs.getFirstNode(state.tree).id;
+    );
+    const firstNodeId = treeFuncs.getFirstNodeId(state.tree);
     if (nodeIdAboveSelection === firstNodeId) {
-      return treeFuncs.getFirstNode(newTree).id;
+      return treeFuncs.getFirstNodeId(newTree);
     }
     return nodeIdAboveSelection;
   }

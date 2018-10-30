@@ -85,7 +85,7 @@ export default class NodeTree {
         newNode,
         ...takeRightWhile(values(this.tree), notTargetNode)
       ];
-      console.info(list);
+      // console.info(list);
       this.tree = keyBy(list, "id");
     }
     return newNode;

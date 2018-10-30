@@ -14,6 +14,8 @@ const Id = styled.div`
 const BulletContainer = styled.span`
   padding-top: 0.25em;
   padding-bottom: 0.25em;
+  display: flex;
+  background-color: ${({ isSelected }) => (isSelected ? "#0000ff22" : null)};
 `;
 
 const Footer = styled.div`
@@ -32,7 +34,7 @@ const Dot = styled.span`
 `;
 
 function Bullet({ id, bulletState, dispatch, isSelectingMultipleLines }) {
-  const { label, indentLevel, isSelected } = bulletState;
+  const { label, isSelected } = bulletState;
 
   const onChange = label => dispatch({ type: "CHANGE_LABEL", label, id });
   const addNodeBelow = id => dispatch({ type: "ADD_NODE_BELOW", id });
@@ -41,38 +43,46 @@ function Bullet({ id, bulletState, dispatch, isSelectingMultipleLines }) {
   const indentSelected = () => dispatch({ type: "INDENT_SELECTED" });
 
   return (
-    <BulletContainer
-      title={id}
-      style={{
-        display: "flex",
-        marginLeft: `${indentLevel * 2}em`,
-        backgroundColor:
-          isSelected && isSelectingMultipleLines ? "#0000ff22" : null
-      }}
-    >
-      {/* {isCollapsed ? "+" : "−"} */}
-      <Dot />
-      <PlainContentEditable
-        className="no-focus-box"
-        data-id={id}
-        value={label}
-        onChange={onChange}
-        onInput={e => {
-          e.key === "Backspace" && !label && removeSelected();
-          if (e.shiftKey && e.key === "Tab") {
-            unindentSelected();
-          } else if (e.key === "Tab") {
-            indentSelected();
-          }
-          e.key === "Enter" && addNodeBelow(id);
-        }}
-        style={{ width: "100%" }}
-      />
-      <Id title={id}>
-        {hashEmoji(label)}
-        {hashEmoji(id)}
-      </Id>
-    </BulletContainer>
+    <div>
+      <BulletContainer
+        title={id}
+        isSelected={isSelected && isSelectingMultipleLines}
+      >
+        {/* {isCollapsed ? "+" : "−"} */}
+        <Dot />
+        <PlainContentEditable
+          className="no-focus-box"
+          data-id={id}
+          value={label}
+          onChange={onChange}
+          onInput={e => {
+            e.key === "Backspace" && !label && removeSelected();
+            if (e.shiftKey && e.key === "Tab") {
+              unindentSelected();
+            } else if (e.key === "Tab") {
+              indentSelected();
+            }
+            e.key === "Enter" && addNodeBelow(id);
+          }}
+          style={{ width: "100%" }}
+        />
+        <Id title={id}>
+          {hashEmoji(label)}
+          {hashEmoji(id)}
+        </Id>
+      </BulletContainer>
+      <div style={{ marginLeft: "2em" }}>
+        {treeFuncs.mapValues(bulletState.tree, ({ id }) => (
+          <Bullet
+            key={id}
+            id={id}
+            isSelectingMultipleLines={isSelectingMultipleLines}
+            bulletState={treeFuncs.getNode(bulletState.tree, id)}
+            dispatch={dispatch}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
