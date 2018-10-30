@@ -8,6 +8,7 @@ import {
   last
 } from "lodash";
 import uuid from "uuid/v1";
+import demoState from "./nodeTreeDemo";
 
 // SETUP -----------
 
@@ -21,19 +22,19 @@ const nodeDefaults = () => ({
 });
 
 const defaultNode = nodeDefaults();
-const defaultTree = {
-  [defaultNode.id]: {
-    ...defaultNode,
-    label: "Type something"
-  }
-};
-const localNodeTree = JSON.parse(window.localStorage.getItem("nodeTree"));
-export const initialState = {
+const defaultState = {
   selectionStartId: null,
   selectionEndId: null,
   isFromIndexHigher: true,
-  tree: localNodeTree || defaultTree
+  tree: {
+    [defaultNode.id]: {
+      ...defaultNode,
+      label: "Type something"
+    }
+  }
 };
+
+export const initialState = demoState || defaultState;
 
 // REDUCER -----------
 

@@ -3,36 +3,36 @@ import styled from "styled-components";
 import hashEmoji from "hash-emoji";
 import PlainContentEditable from "./PlainContentEditable";
 import { reducer, initialState, treeFuncs } from "./NodeTree";
+import { ButtonPrimary, VerticalSpacer } from "./FormComponents";
 
 const Id = styled.div`
-  font-family: monospace;
-  width: 7em;
-  font-size: 0.75em;
+  text-align: right;
   overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
-  align-self: center;
-  text-align: right;
 `;
 
-const Box = styled.span`
-  &:hover {
-    outline: 1px solid #0000ff22;
-  }
-  &:focus-within {
-    // background: #0000ff11;
-  }
+const BulletContainer = styled.span`
+  padding-top: 0.25em;
+  padding-bottom: 0.25em;
+`;
+
+const Footer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #d4d4d4;
+  padding-top: 1em;
 `;
 
 const Dot = styled.span`
   &:after {
     content: "•";
-    margin-right: 0.3em;
+    margin-right: 0.5em;
   }
 `;
 
-function Bullet({ id, bulletState, dispatch }) {
-  const { label, indentLevel, isSelected, isCollapsed } = bulletState;
+function Bullet({ id, bulletState, dispatch, isSelectingMultipleLines }) {
+  const { label, indentLevel, isSelected } = bulletState;
 
   const onChange = label => dispatch({ type: "CHANGE_LABEL", label, id });
   const addNodeBelow = id => dispatch({ type: "ADD_NODE_BELOW", id });
@@ -41,15 +41,16 @@ function Bullet({ id, bulletState, dispatch }) {
   const indentSelected = () => dispatch({ type: "INDENT_SELECTED" });
 
   return (
-    <Box
+    <BulletContainer
       title={id}
       style={{
         display: "flex",
         marginLeft: `${indentLevel * 2}em`,
-        background: isSelected && "#0000ff11"
+        backgroundColor:
+          isSelected && isSelectingMultipleLines ? "#0000ff22" : null
       }}
     >
-      {isCollapsed ? "+" : "−"}
+      {/* {isCollapsed ? "+" : "−"} */}
       <Dot />
       <PlainContentEditable
         className="no-focus-box"
@@ -71,7 +72,7 @@ function Bullet({ id, bulletState, dispatch }) {
         {hashEmoji(label)}
         {hashEmoji(id)}
       </Id>
-    </Box>
+    </BulletContainer>
   );
 }
 
@@ -117,8 +118,12 @@ function BulletList() {
     }
   }
 
+  const isSelectingMultipleLines =
+    state.selectionStartId !== state.selectionEndId;
+
   return (
-    <div
+    <VerticalSpacer
+      space="2em"
       ref={ref}
       onKeyDown={e => {
         e.key === "ArrowUp" &&
@@ -148,18 +153,25 @@ function BulletList() {
         }
       }}
     >
-      {treeFuncs.mapValues(state.tree, ({ id }) => (
-        <Bullet
-          key={id}
-          id={id}
-          bulletState={treeFuncs.getNode(state.tree, id)}
-          dispatch={dispatchProxy}
-        />
-      ))}
-      Start: {hashEmoji(state.selectionStartId)}, End:{" "}
-      {hashEmoji(state.selectionEndId)}, isReversed:{" "}
-      {String(!state.isFromIndexHigher)}
-    </div>
+      <h1>Bullet List</h1>
+      <div>
+        {treeFuncs.mapValues(state.tree, ({ id }) => (
+          <Bullet
+            key={id}
+            id={id}
+            isSelectingMultipleLines={isSelectingMultipleLines}
+            bulletState={treeFuncs.getNode(state.tree, id)}
+            dispatch={dispatchProxy}
+          />
+        ))}
+      </div>
+      <Footer>
+        Start: {hashEmoji(state.selectionStartId)}, End:
+        {hashEmoji(state.selectionEndId)}, isReversed:
+        {String(!state.isFromIndexHigher)}
+        <ButtonPrimary style={{ width: "inherit" }}>Save</ButtonPrimary>
+      </Footer>
+    </VerticalSpacer>
   );
 }
 
