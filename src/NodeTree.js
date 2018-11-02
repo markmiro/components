@@ -219,6 +219,7 @@ function select(state, newSelection) {
     fromId: newSelection.fromId || state.selectionStartId,
     toId: newSelection.toId || state.selectionEndId
   };
+  if (!fromId || !toId) return state;
   const list = asList(state.tree);
   const indexRange = () => {
     const fromNode = treeFuncs.getNode(state.tree, fromId);
