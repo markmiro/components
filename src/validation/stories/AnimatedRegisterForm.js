@@ -12,6 +12,7 @@ import {
   FinePrint,
   Loading
 } from "../../FormComponents";
+import { Titled } from "../../smart-components/SmartComponents";
 import TransitionContent from "../../TransitionContent";
 
 const AdvancedInput = props => {
@@ -112,72 +113,73 @@ class AnimatedRegisterForm extends Component {
           );
         }}
       >
-        <VerticalSpacer space="1rem">
-          <h1>Register</h1>
-          <div style={{ marginTop: "2rem" }}>
-            <AdvancedInput
-              name="name"
-              label="Name"
-              value={name}
-              onChange={e =>
-                this.setState({ name: e.target.value }, this.encourage)
-              }
-              onBlur={() => this.setState({ successes: { name: "" } })}
-              message={successes.name}
-              errorMessage={errors.name}
-            />
-          </div>
-          <div>
-            <AdvancedInput
-              name="email"
-              type="email"
-              label="Email"
-              value={email}
-              onChange={e => this.setState({ email: e.target.value })}
-              errorMessage={errors.email}
-            />
-          </div>
-          <div>
-            <AdvancedInput
-              name="password"
-              type="password"
-              label="Password"
-              value={password}
-              onChange={e => this.setState({ password: e.target.value })}
-              errorMessage={errors.password}
-            />
-          </div>
+        <Titled value="Register" isUnderlined>
+          <VerticalSpacer space="1rem">
+            <div style={{ marginTop: "2rem" }}>
+              <AdvancedInput
+                name="name"
+                label="Name"
+                value={name}
+                onChange={e =>
+                  this.setState({ name: e.target.value }, this.encourage)
+                }
+                onBlur={() => this.setState({ successes: { name: "" } })}
+                message={successes.name}
+                errorMessage={errors.name}
+              />
+            </div>
+            <div>
+              <AdvancedInput
+                name="email"
+                type="email"
+                label="Email"
+                value={email}
+                onChange={e => this.setState({ email: e.target.value })}
+                errorMessage={errors.email}
+              />
+            </div>
+            <div>
+              <AdvancedInput
+                name="password"
+                type="password"
+                label="Password"
+                value={password}
+                onChange={e => this.setState({ password: e.target.value })}
+                errorMessage={errors.password}
+              />
+            </div>
 
-          <ButtonPrimary
-            type="submit"
-            disabled={isSubmitting}
-            isSubmitting={isSubmitting}
-            style={{
-              marginTop: "2.25rem",
-              position: "relative",
-              height: 47
-            }}
-          >
-            <TransitionContent speed="fast">
-              {isSubmitting ? (
-                <Loading key={1} />
-              ) : (
-                <span key={2}>Create Account</span>
-              )}
-            </TransitionContent>
-          </ButtonPrimary>
-          <hr />
-          <VerticalSpacer space=".5rem">
-            <Button>Continue with Facebook</Button>
-            <Button>Continue with Google</Button>
+            <ButtonPrimary
+              type="submit"
+              disabled={isSubmitting}
+              isSubmitting={isSubmitting}
+              style={{
+                marginTop: "2.25rem",
+                position: "relative",
+                height: 47
+              }}
+            >
+              <TransitionContent speed="fast">
+                {isSubmitting ? (
+                  <Loading key={1} />
+                ) : (
+                  <span key={2}>Create Account</span>
+                )}
+              </TransitionContent>
+            </ButtonPrimary>
+            <hr />
+            <VerticalSpacer space=".5rem">
+              <Button>Continue with Facebook</Button>
+              <Button>Continue with Google</Button>
+            </VerticalSpacer>
+            <FinePrint style={{ textAlign: "center" }}>
+              By clicking Create Account, Continue with Facebook, or Continue
+              with Google, you agree to our
+              <br />
+              <a href="/terms">Terms and Conditions</a>.
+            </FinePrint>
           </VerticalSpacer>
-          <FinePrint style={{ textAlign: "center" }}>
-            By clicking Create Account, Continue with Facebook, or Continue with
-            Google, you agree to our
-            <br />
-            <a href="/terms">Terms and Conditions</a>.
-          </FinePrint>
-        </VerticalSpacer>
+        </Titled>
       </form>
     );
   }

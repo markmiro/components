@@ -193,7 +193,8 @@ const ButtonBase = styled(FormControlBase)`
     background-color: rgba(0, 0, 0, 0.03);
   }
   ${({ selected }) =>
-    selected && "background-image: linear-gradient(#ececec, #bbbbbb0a);"}
+    selected &&
+    "box-shadow: inset 0px 4px 5px rgba(0, 0, 0, 0.1); background-color: #f6f6f6;"}
 `;
 
 export const Button = props => <ButtonBase as="button" {...props} />;
@@ -330,8 +331,8 @@ export class FadeOut extends Component {
 export const Fill = styled.div`
   min-height: 100%;
   display: flex;
-  align-items: center;
   justify-content: center;
+  flex-direction: column;
 `;
 
 export const PageCardCenter = styled.div`

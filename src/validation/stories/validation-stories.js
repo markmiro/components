@@ -12,9 +12,14 @@ import RadioOptions from "./RadioOptions";
 import OptionalInput from "./OptionalInput";
 import NoteForm from "./NoteForm";
 import Validated from "../Validated";
+import { NestingContext } from "../../smart-components/SmartComponents";
 
 storiesOf("Forms", module)
-  .addDecorator(story => <PageCard>{story()}</PageCard>)
+  .addDecorator(story => (
+    <PageCard>
+      <NestingContext.Provider value={3}>{story()}</NestingContext.Provider>
+    </PageCard>
+  ))
   .add("AnimatedRegisterForm", () => <AnimatedRegisterForm />)
   .add("EmailFieldValidationWithoutLibrary", () => (
     <EmailFieldValidationWithoutLibrary />

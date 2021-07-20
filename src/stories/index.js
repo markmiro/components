@@ -13,6 +13,7 @@ import Resume from "../Resume";
 
 import "../globals";
 import "../validation/stories/validation-stories";
+import "../smart-components/stories";
 import "./elements";
 import "./components";
 import "./random";

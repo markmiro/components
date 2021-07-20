@@ -6,6 +6,7 @@ import {
   ButtonSuperPrimary,
   VerticalSpacer
 } from "../../FormComponents";
+import { Titled } from "../../smart-components/SmartComponents";
 import { trace } from "../../globals";
 import { ValidatedForm } from "../Validated";
 import validations from "../validations2";
@@ -62,81 +63,82 @@ class RegisterForm extends React.Component {
         { reset }
       ) => (
         <VerticalSpacer space="1em">
-          <h1>Create Account</h1>
-          {username.watchFull(<ValidatedInput label="Username" autoFocus />)}
-          {email.watchFull(
-            <ValidatedInput
-              label="Email"
-              validationMessage={
-                email.validationMessage || this.state.isEmailUniqueMessage
-              }
-              isValidating={this.state.isCheckingIfEmailUnique}
-              onChange={e => {
-                const email = e.target.value;
-                this.setState({ email, isCheckingIfEmailUnique: true });
-                isEmailUniqueDebounced(email, message => {
-                  this.setState({
-                    isEmailUniqueMessage: message,
-                    isCheckingIfEmailUnique: false
+          <Titled value="Create Account" isUnderlined>
+            {username.watchFull(<ValidatedInput label="Username" autoFocus />)}
+            {email.watchFull(
+              <ValidatedInput
+                label="Email"
+                validationMessage={
+                  email.validationMessage || this.state.isEmailUniqueMessage
+                }
+                isValidating={this.state.isCheckingIfEmailUnique}
+                onChange={e => {
+                  const email = e.target.value;
+                  this.setState({ email, isCheckingIfEmailUnique: true });
+                  isEmailUniqueDebounced(email, message => {
+                    this.setState({
+                      isEmailUniqueMessage: message,
+                      isCheckingIfEmailUnique: false
+                    });
                   });
-                });
-              }}
-            />
-          )}
-          {confirmEmail.watchFull(<ValidatedInput label="Confirm Email" />)}
-          {password.watchFull(
-            <ValidatedInput
-              type="password"
-              label="Password"
-              validationMessage={
-                password.validationMessage &&
-                password.validationMessage
-                  .filter(message => !!message)
-                  .map(message => <div key={message}>{message}</div>)
-              }
-            />
-          )}
-          {ccName.watchFull(
-            <ValidatedInput autoComplete="cc-name" label="Name on Card" />
-          )}
-          {ccNumber.watchFull(
-            <ValidatedInput
-              autoComplete="cc-number"
-              label="Credit Card Number"
-            />
-          )}
-          {acceptTerms.watchFull(
-            <ValidatedInput
-              label="I accept the terms and conditions"
-              type="checkbox"
-            />
-          )}
+                }}
+              />
+            )}
+            {confirmEmail.watchFull(<ValidatedInput label="Confirm Email" />)}
+            {password.watchFull(
+              <ValidatedInput
+                type="password"
+                label="Password"
+                validationMessage={
+                  password.validationMessage &&
+                  password.validationMessage
+                    .filter(message => !!message)
+                    .map(message => <div key={message}>{message}</div>)
+                }
+              />
+            )}
+            {ccName.watchFull(
+              <ValidatedInput autoComplete="cc-name" label="Name on Card" />
+            )}
+            {ccNumber.watchFull(
+              <ValidatedInput
+                autoComplete="cc-number"
+                label="Credit Card Number"
+              />
+            )}
+            {acceptTerms.watchFull(
+              <ValidatedInput
+                label="I accept the terms and conditions"
+                type="checkbox"
+              />
+            )}
 
-          <ButtonSuperPrimary type="submit">Submit</ButtonSuperPrimary>
-          <ButtonGroupH>
-            <Button
-              type="button"
-              onClick={() => {
-                this.setState({
-                  email: "",
-                  isEmailUniqueMessage: ""
-                });
-                reset();
-              }}
-            >
-              Reset
-            </Button>
-            <Button
-              type="button"
-              onClick={() =>
-                this.setState({
-                  email: "something@something.com"
-                })
-              }
-            >
-              Autofill
-            </Button>
-          </ButtonGroupH>
+            <ButtonSuperPrimary type="submit">Submit</ButtonSuperPrimary>
+            <ButtonGroupH>
+              <Button
+                type="button"
+                onClick={() => {
+                  this.setState({
+                    email: "",
+                    isEmailUniqueMessage: ""
+                  });
+                  reset();
+                }}
+              >
+                Reset
+              </Button>
+              <Button
+                type="button"
+                onClick={() =>
+                  this.setState({
+                    email: "something@something.com"
+                  })
+                }
+              >
+                Autofill
+              </Button>
+            </ButtonGroupH>
+          </Titled>
         </VerticalSpacer>
       )}
     />
